@@ -1646,7 +1646,8 @@
                 const dayEvents = eventsData.filter(e => {
                     const eStart = e.start.dateTime || e.start.date;
                     if (!eStart) return false;
-                    return eStart.startsWith(dayStr);
+                    // Fix: On coupe le string à 10 chars pour 'YYYY-MM-DD'
+                    return eStart.substring(0, 10) === dayStr;
                 });
 
                 let dotsHtml = '';
@@ -1712,7 +1713,8 @@
 
             const dayEvents = eventsData.filter(e => {
                 const eStart = e.start.dateTime || e.start.date;
-                return eStart && eStart.startsWith(dateStr);
+                // Fix: Comparer uniquement les 10 premiers caractères (YYYY-MM-DD)
+                return eStart && eStart.substring(0, 10) === dateStr;
             });
 
             let html = `
