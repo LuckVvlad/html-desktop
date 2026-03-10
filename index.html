@@ -332,6 +332,14 @@
             text-align: center;
             font-weight: 500;
             text-shadow: 1px 1px 2px #000;
+            width: 100%;
+            word-break: break-word;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            padding: 0 5px;
         }
 
         .delete-link {
@@ -1383,8 +1391,10 @@
             const color = '#34a853';
             
             data.links.push({ name, url, icon, color, page: pageId });
+            localStorage.setItem('os_drag_v2', JSON.stringify(data));
             render();
             closeFileExplorer();
+            if (accessToken) uploadConfigToDrive();
         }
 
         window.onload = function () {
