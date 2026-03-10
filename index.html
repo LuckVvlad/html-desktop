@@ -1,0 +1,1164 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mon OS Desktop - Drag & Drop</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://apis.google.com/js/api.js"></script>
+    <script src="https://accounts.google.com/gsi/client"></script>
+    <style>
+        :root {
+            --bg-url: url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop');
+            --glass: rgba(255, 255, 255, 0.1);
+            --glass-active: rgba(255, 255, 255, 0.25);
+            --icon-size: 55px;
+        }
+
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: #000;
+            overflow: hidden;
+            color: white;
+        }
+
+        .screen {
+            display: flex;
+            width: 100%;
+            height: 100vh;
+            background: var(--bg-url) center/cover no-repeat;
+        }
+
+        /* --- SIDEBAR --- */
+        .sidebar {
+            width: 90px;
+            background: rgba(0, 0, 0, 0.65);
+            backdrop-filter: blur(20px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 25px 0;
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 10;
+        }
+
+        .tab-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 16px;
+            background: var(--glass);
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: 0.3s;
+            border: none;
+            color: white;
+            position: relative;
+        }
+
+        .tab-btn:hover {
+            background: var(--glass-active);
+            transform: scale(1.05);
+        }
+
+        .tab-btn.active {
+            background: var(--glass-active);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+        }
+
+        .tab-label {
+            font-size: 8px;
+            margin-top: 5px;
+            text-transform: uppercase;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .sidebar-bottom {
+            margin-top: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .add-btn {
+            background: #34a853;
+            color: white;
+        }
+
+        .gmail-btn {
+            background: linear-gradient(135deg, #ea4335, #c5221f);
+        }
+
+        .auth-btn {
+            background: #4285f4;
+            color: white;
+            font-size: 14px;
+        }
+
+        .auth-btn.connected {
+            background: #34a853;
+        }
+
+        .auth-btn.disconnected {
+            background: #ea4335;
+        }
+
+        /* --- CONTENU --- */
+        .main-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .status-bar {
+            padding: 15px 40px;
+            text-align: right;
+            font-size: 18px;
+            font-weight: 500;
+            text-shadow: 0 2px 4px #000;
+        }
+
+        .search-section {
+            display: flex;
+            justify-content: center;
+            padding: 5px 0 25px 0;
+        }
+
+        .search-bar {
+            width: 550px;
+            padding: 14px 28px;
+            border-radius: 35px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            color: white;
+            font-size: 16px;
+            outline: none;
+        }
+
+        .content-area {
+            flex: 1;
+            padding: 20px 50px;
+            overflow-y: auto;
+        }
+
+        .page {
+            display: none;
+            width: 100%;
+            min-height: 100%;
+            position: relative;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        /* --- MODES DE L'APPLICATION --- */
+        body.edit-mode .app-item:hover .delete-link,
+        body.edit-mode .app-item:hover .edit-link {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        body.edit-mode .app-item {
+            cursor: grab;
+        }
+
+        body.edit-mode .app-item:active {
+            cursor: grabbing;
+        }
+
+        body.edit-mode .app-item a {
+            pointer-events: none;
+        }
+
+        /* En mode normal, pas de curseur grab et interdiction stricte d'interagir avec les éléments de modif */
+        body:not(.edit-mode) .app-item,
+        body:not(.edit-mode) .app-group {
+            cursor: pointer;
+        }
+
+        body:not(.edit-mode) .app-item .delete-link,
+        body:not(.edit-mode) .app-item .edit-link {
+            display: none !important;
+        }
+
+        /* --- APPS & DRAG STYLES --- */
+        .app-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            color: white;
+            position: absolute;
+            transition: transform 0.2s, opacity 0.2s;
+            width: 100px;
+        }
+
+        .app-item.dragging {
+            opacity: 0.4;
+            transform: scale(0.8);
+            z-index: 100;
+        }
+
+        .app-item.drag-over {
+            border: 2px dashed rgba(255, 255, 255, 0.5);
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Styles for App Groups */
+        .app-group {
+            position: absolute;
+            width: 100px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .app-group:hover {
+            transform: scale(1.05);
+        }
+
+        .group-icon-wrapper {
+            width: var(--icon-size);
+            height: var(--icon-size);
+            border-radius: 14px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 2px;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .group-mini-icon {
+            width: 100%;
+            height: 100%;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+        }
+
+        .group-label {
+            font-size: 11px;
+            text-align: center;
+            font-weight: 500;
+            text-shadow: 1px 1px 2px #000;
+            margin-top: 10px;
+            pointer-events: none;
+        }
+
+        /* Group Modal Styles */
+        .group-modal {
+            display: none;
+            position: absolute;
+            background: rgba(30, 30, 30, 0.95);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 20px;
+            z-index: 200;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            width: max-content;
+            max-width: 400px;
+        }
+
+        .group-modal .app-item {
+            position: relative;
+            transform: none !important;
+            width: 80px;
+        }
+
+        .group-modal-close {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background: #ea4335;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+
+        .group-modal-title {
+            grid-column: 1 / -1;
+            margin: 0 0 10px 0;
+            font-size: 14px;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.7);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 10px;
+        }
+
+        .icon-wrapper {
+            width: var(--icon-size);
+            height: var(--icon-size);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            margin-bottom: 10px;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+        }
+
+        .app-label {
+            font-size: 11px;
+            text-align: center;
+            font-weight: 500;
+            text-shadow: 1px 1px 2px #000;
+        }
+
+        .delete-link {
+            position: absolute;
+            top: -5px;
+            right: 20px;
+            background: rgba(255, 0, 0, 0.9);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 10px;
+            cursor: pointer;
+            display: none;
+            z-index: 5;
+        }
+
+        .edit-link {
+            position: absolute;
+            top: -5px;
+            right: 45px;
+            background: rgba(0, 122, 255, 0.9);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 10px;
+            cursor: pointer;
+            display: none;
+            z-index: 5;
+        }
+
+        /* Les liens delete et edit sont gérés par body.edit-mode en haut du fichier */
+
+        /* --- MODAL --- */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(8px);
+        }
+
+        .modal-content {
+            background: #181818;
+            padding: 35px;
+            border-radius: 24px;
+            width: 440px;
+            border: 1px solid #333;
+        }
+
+        input,
+        select,
+        button {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 10px;
+            border: 1px solid #444;
+            background: #2a2a2a;
+            color: white;
+            box-sizing: border-box;
+        }
+
+        .preview-box {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 15px;
+            margin: 15px 0;
+            border: 1px dashed #555;
+        }
+
+        #iconPreview {
+            width: 55px;
+            height: 55px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+        }
+
+        .helper-link {
+            color: #34a853;
+            font-size: 11px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .save-btn {
+            background: #34a853;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 15px;
+            font-size: 16px;
+        }
+
+        .cancel-btn {
+            background: transparent;
+            border: none;
+            color: #777;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="screen">
+        <nav class="sidebar" id="sidebar">
+            <div class="sidebar-bottom">
+                <button id="editModeBtn" class="tab-btn" onclick="toggleEditMode()" title="Mode Édition"
+                    style="background: rgba(255,165,0,0.8);"><i class="fas fa-pencil-ruler"></i></button>
+                <button id="authBtn" class="tab-btn auth-btn disconnected" onclick="handleAuthClick()"
+                    title="Connexion Google"><i class="fab fa-google"></i></button>
+                <button class="tab-btn add-btn" onclick="showModal()" title="Ajouter"><i
+                        class="fas fa-plus"></i></button>
+                <a href="https://mail.google.com" target="_blank" class="tab-btn gmail-btn" title="Gmail"><i
+                        class="fas fa-envelope"></i></a>
+            </div>
+        </nav>
+
+        <main class="main-container">
+            <div class="status-bar"><span id="clock">00:00</span></div>
+            <div class="search-section">
+                <form action="https://www.google.com/search" method="get" target="_blank">
+                    <input type="text" name="q" class="search-bar" placeholder="Rechercher sur Google...">
+                </form>
+            </div>
+            <div class="content-area" id="pages-container"></div>
+            <div id="group-modal-container"></div>
+        </main>
+    </div>
+
+    <div id="addModal" class="modal">
+        <div class="modal-content">
+            <h2 style="margin:0 0 15px 0; font-size: 22px;">Nouvel Élément</h2>
+            <select id="typeSelector" onchange="toggleInputs()">
+                <option value="link">Lien / Application</option>
+                <option value="page">Nouvelle Page / Onglet</option>
+                <option value="file">Fichier (Upload vers Drive)</option>
+            </select>
+            <input type="text" id="itemName" placeholder="Nom de l'élément">
+            <input type="text" id="itemUrl" placeholder="URL (ex: https://...)">
+
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
+                <label style="font-size: 11px; color: #999;">Icône :</label>
+                <a href="https://fontawesome.com/search?m=free" target="_blank" class="helper-link">Trouver une icône <i
+                        class="fas fa-external-link-alt"></i></a>
+            </div>
+
+            <div class="preview-box">
+                <div id="iconPreview" style="background:#4285f4"><i class="fas fa-globe"></i></div>
+                <div style="flex:1">
+                    <input type="text" id="itemIcon" placeholder="ex: apple, house, star..." oninput="updatePreview()"
+                        style="margin:0">
+                </div>
+            </div>
+
+            <div id="linkOnlyFields">
+                <div style="display:flex; gap:10px; align-items:center;">
+                    <div style="flex:1">
+                        <label style="font-size: 11px; color: #999;">Onglet :</label>
+                        <select id="targetPage"></select>
+                    </div>
+                    <div style="flex:1">
+                        <label style="font-size: 11px; color: #999;">Couleur :</label>
+                        <input type="color" id="itemColor" value="#4285f4" oninput="updatePreview()">
+                    </div>
+                </div>
+            </div>
+
+            <div id="fileUploadFields" style="display:none;">
+                <label style="font-size: 11px; color: #999;">Choisir un fichier à uploader :</label>
+                <input type="file" id="itemFile" style="background:#111; padding: 8px;">
+                <small style="color:#aaa; font-size:10px; display:block; margin-top: -5px;">Nécessite d'être connecté à
+                    Google.</small>
+            </div>
+
+            <button id="saveBtn" class="save-btn" onclick="saveItem()">Enregistrer</button>
+            <button class="cancel-btn" onclick="hideModal()">Annuler</button>
+        </div>
+    </div>
+
+    <script>
+        // --- DONNÉES COMPLÈTES ---
+        const initialFullData = {
+            pages: [
+                { id: 'home', label: 'Home', icon: 'fa-home' },
+                { id: 'google', label: 'Google', icon: 'fa-google' },
+                { id: 'ai', label: 'IA', icon: 'fa-robot' }
+            ],
+            links: [
+                { id: 1, name: 'YouTube', url: 'https://youtube.com', icon: 'fa-youtube', color: '#ea4335', page: 'home' },
+                { id: 2, name: 'GitHub', url: 'https://github.com', icon: 'fa-github', color: '#333', page: 'home' },
+                { id: 3, name: 'Twitter', url: 'https://twitter.com', icon: 'fa-x-twitter', color: '#000', page: 'home' },
+                { id: 4, name: 'Search', url: 'https://google.com', icon: 'fa-google', color: '#fff', page: 'google' },
+                { id: 5, name: 'Maps', url: 'https://maps.google.com', icon: 'fa-map-marker-alt', color: '#34a853', page: 'google' },
+                { id: 6, name: 'Drive', url: 'https://drive.google.com', icon: 'fa-google-drive', color: '#fbbc05', page: 'google' },
+                { id: 7, name: 'Agenda', url: 'https://calendar.google.com', icon: 'fa-calendar-alt', color: '#4285f4', page: 'google' },
+                { id: 8, name: 'Photos', url: 'https://photos.google.com', icon: 'fa-images', color: '#fff', page: 'google' },
+                { id: 9, name: 'Meet', url: 'https://meet.google.com', icon: 'fa-video', color: '#34a853', page: 'google' },
+                { id: 10, name: 'Translate', url: 'https://translate.google.com', icon: 'fa-language', color: '#4285f4', page: 'google' },
+                { id: 11, name: 'Docs', url: 'https://docs.google.com', icon: 'fa-file-alt', color: '#4285f4', page: 'google' },
+                { id: 12, name: 'Sheets', url: 'https://sheets.google.com', icon: 'fa-file-excel', color: '#34a853', page: 'google' },
+                { id: 13, name: 'Keep', url: 'https://keep.google.com', icon: 'fa-lightbulb', color: '#fbbc05', page: 'google' },
+                { name: 'News', url: 'https://news.google.com', icon: 'fa-newspaper', color: '#4285f4', page: 'google' },
+                { name: 'Contacts', url: 'https://contacts.google.com', icon: 'fa-user-circle', color: '#4285f4', page: 'google' },
+                { name: 'ChatGPT', url: 'https://chat.openai.com', icon: 'fa-comment-dots', color: '#10a37f', page: 'ai' },
+                { name: 'Claude', url: 'https://claude.ai', icon: 'fa-brain', color: '#d97757', page: 'ai' },
+                { name: 'Gemini', url: 'https://gemini.google.com', icon: 'fa-wand-magic-sparkles', color: '#4285f4', page: 'ai' },
+                { name: 'Perplexity', url: 'https://www.perplexity.ai', icon: 'fa-search', color: '#20b2aa', page: 'ai' },
+                { name: 'Midjourney', url: 'https://www.midjourney.com', icon: 'fa-paint-brush', color: '#000', page: 'ai' },
+                { name: 'Mistral', url: 'https://mistral.ai', icon: 'fa-wind', color: '#f36e21', page: 'ai' }
+            ]
+        };
+
+        const CLIENT_ID = '442951396586-hkf0co389rsq7u2oqi7aula9d16ppkmi.apps.googleusercontent.com';
+        const SCOPES = 'https://www.googleapis.com/auth/drive.file';
+        let tokenClient;
+        let accessToken = null;
+        let desktopFolderId = null;
+        let configFileId = null;
+
+        let data = JSON.parse(localStorage.getItem('os_drag_v2')) || initialFullData;
+        let activePageId = data.pages[0].id;
+        let draggedItem = null;
+        let editingItemName = null;
+        let isEditMode = false;
+
+        function toggleEditMode() {
+            isEditMode = !isEditMode;
+            if (isEditMode) {
+                document.body.classList.add('edit-mode');
+                document.getElementById('editModeBtn').style.background = 'rgba(255,0,0,0.8)';
+            } else {
+                document.body.classList.remove('edit-mode');
+                document.getElementById('editModeBtn').style.background = 'rgba(255,165,0,0.8)';
+            }
+            render();
+        }
+
+        function render() {
+            const sidebar = document.getElementById('sidebar');
+            const pagesContainer = document.getElementById('pages-container');
+            const targetPageSelect = document.getElementById('targetPage');
+
+            // Find an empty slot based on existing items dimensions
+            function findEmptySlot(pageId) {
+                let testX = 20;
+                let testY = 20;
+                const itemsOnPage = [
+                    ...data.links.filter(l => l.page === pageId && !l.groupId),
+                    ...(data.groups ? data.groups.filter(g => g.page === pageId) : [])
+                ];
+
+                let found = false;
+                while (!found) {
+                    const isOccupied = itemsOnPage.some(item => {
+                        return item.x !== undefined && item.y !== undefined &&
+                            Math.abs(item.x - testX) < 100 && Math.abs(item.y - testY) < 120;
+                    });
+
+                    if (!isOccupied) {
+                        found = true;
+                    } else {
+                        testX += 120;
+                        if (testX > 800) {
+                            testX = 20;
+                            testY += 150;
+                        }
+                    }
+                }
+                return { x: testX, y: testY };
+            }
+test
+            document.querySelectorAll('.tab-dyn').forEach(e => e.remove());
+            pagesContainer.innerHTML = '';
+            targetPageSelect.innerHTML = '';
+
+            data.pages.forEach(page => {
+                const btn = document.createElement('div');
+                btn.className = `tab-btn tab-dyn ${page.id === activePageId ? 'active' : ''}`;
+                btn.onclick = () => switchPage(page.id);
+                btn.innerHTML = `<i class="${formatIcon(page.icon)}"></i><span class="tab-label">${page.label}</span>`;
+                sidebar.insertBefore(btn, sidebar.querySelector('.sidebar-bottom'));
+
+                const grid = document.createElement('div');
+                grid.id = page.id;
+                grid.className = `page ${page.id === activePageId ? 'active' : ''}`;
+
+                // Gestionnaire de drop sur la grille
+                grid.ondragover = e => e.preventDefault();
+                grid.ondrop = e => {
+                    e.preventDefault();
+                    if (!draggedItem) return;
+
+                    // Click target (to see if we dropped on a group or app)
+                    const targetEl = e.target.closest('.app-item') || e.target.closest('.app-group');
+
+                    if (targetEl && targetEl.dataset.id !== draggedItem.name) {
+                        // We dropped onto another item (grouping)
+                        const targetId = targetEl.dataset.id;
+
+                        let targetItem = data.links.find(l => l.name === targetId);
+                        let targetGroup = data.groups?.find(g => g.id === targetId);
+
+                        if (!data.groups) data.groups = [];
+
+                        if (targetItem) {
+                            // Dropped on a single app -> Create new group
+                            const newGroupId = 'group_' + Date.now();
+                            const newGroup = {
+                                id: newGroupId,
+                                name: 'Nouveau Dossier',
+                                page: page.id,
+                                x: targetItem.x,
+                                y: targetItem.y,
+                                items: [targetItem.name, draggedItem.name]
+                            };
+                            data.groups.push(newGroup);
+
+                            // Remove individual positioning from grouped items
+                            delete targetItem.x; delete targetItem.y;
+                            delete draggedItem.x; delete draggedItem.y;
+                            targetItem.groupId = newGroupId;
+                            draggedItem.groupId = newGroupId;
+
+                        } else if (targetGroup) {
+                            // Dropped on an existing group
+                            if (!targetGroup.items.includes(draggedItem.name)) {
+                                targetGroup.items.push(draggedItem.name);
+                                delete draggedItem.x; delete draggedItem.y;
+                                draggedItem.groupId = targetGroup.id;
+                            }
+                        }
+                    } else {
+                        // Regular coordinate drop
+                        if (draggedItem.groupId) {
+                            // Removing from group
+                            const group = data.groups.find(g => g.id === draggedItem.groupId);
+                            if (group) {
+                                group.items = group.items.filter(i => i !== draggedItem.name);
+                                if (group.items.length <= 1) {
+                                    // Dissolve group if 1 or 0 items left
+                                    if (group.items.length === 1) {
+                                        const lastItem = data.links.find(l => l.name === group.items[0]);
+                                        lastItem.x = group.x;
+                                        lastItem.y = group.y;
+                                        delete lastItem.groupId;
+                                    }
+                                    data.groups = data.groups.filter(g => g.id !== group.id);
+                                }
+                            }
+                            delete draggedItem.groupId;
+                        }
+
+                        const rect = grid.getBoundingClientRect();
+                        let newX = e.clientX - rect.left - (window.dragOffsetX || 0);
+                        let newY = e.clientY - rect.top - (window.dragOffsetY || 0);
+                        if (newX < 0) newX = 0;
+                        if (newY < 0) newY = 0;
+                        draggedItem.x = newX;
+                        draggedItem.y = newY;
+                    }
+                    render();
+                };
+
+                // Render Groups
+                if (data.groups) {
+                    data.groups.filter(g => g.page === page.id).forEach(group => {
+                        const groupEl = document.createElement('div');
+                        groupEl.className = 'app-group';
+                        groupEl.dataset.id = group.id;
+                        groupEl.style.left = group.x + 'px';
+                        groupEl.style.top = group.y + 'px';
+
+                        groupEl.ondragover = e => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            groupEl.style.transform = 'scale(1.1)';
+                        };
+
+                        groupEl.ondragleave = e => {
+                            groupEl.style.transform = '';
+                        };
+
+                        groupEl.ondrop = e => {
+                            groupEl.style.transform = '';
+                            // Event bubbles up to grid.ondrop which handles it
+                        };
+
+                        groupEl.onclick = (e) => {
+                            e.stopPropagation();
+                            openGroupModal(group);
+                        };
+
+                        const groupItems = group.items.map(itemName => data.links.find(l => l.name === itemName)).filter(Boolean);
+
+                        let miniIconsHtml = '';
+                        groupItems.slice(0, 4).forEach(item => {
+                            miniIconsHtml += `<div class="group-mini-icon" style="background:${item.color}"><i class="${formatIcon(item.icon)}"></i></div>`;
+                        });
+
+                        groupEl.innerHTML = `
+                            <div class="group-icon-wrapper">
+                                ${miniIconsHtml}
+                            </div>
+                            <span class="group-label">${group.name}</span>
+                        `;
+                        grid.appendChild(groupEl);
+                    });
+                }
+
+                // Render standalone items
+                data.links.filter(l => l.page === page.id && !l.groupId).forEach((link, index) => {
+                    if (link.x === undefined || link.y === undefined) {
+                        const slot = findEmptySlot(page.id);
+                        link.x = slot.x;
+                        link.y = slot.y;
+                    }
+
+                    const item = document.createElement('div');
+                    item.className = 'app-item';
+                    item.draggable = isEditMode;
+                    item.dataset.id = link.name;
+                    item.style.left = link.x + 'px';
+                    item.style.top = link.y + 'px';
+
+                    // --- ÉVÉNEMENTS DRAG & DROP ---
+                    item.ondragstart = (e) => {
+                        if (!isEditMode) { e.preventDefault(); return; }
+                        draggedItem = link;
+                        item.classList.add('dragging');
+                        e.dataTransfer.effectAllowed = "move";
+                        if (e.dataTransfer.setData) e.dataTransfer.setData('text/plain', '');
+                        const rect = item.getBoundingClientRect();
+                        window.dragOffsetX = e.clientX - rect.left;
+                        window.dragOffsetY = e.clientY - rect.top;
+                    };
+
+                    item.ondragend = () => {
+                        item.classList.remove('dragging');
+                    };
+
+                    item.ondragover = e => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        item.classList.add('drag-over');
+                    };
+
+                    item.ondragleave = () => {
+                        item.classList.remove('drag-over');
+                    };
+
+                    item.innerHTML = `
+                    <button class="edit-link" onclick="openEditModal('${link.name}')" title="Modifier"><i class="fas fa-pencil-alt"></i></button>
+                    <button class="delete-link" onclick="deleteLink('${link.name}')"><i class="fas fa-times"></i></button>
+                    <a href="${link.url}" target="_blank" style="text-decoration:none; color:inherit; display:contents;">
+                        <div class="icon-wrapper" style="background:${link.color}"><i class="${formatIcon(link.icon)}"></i></div>
+                        <span class="app-label">${link.name}</span>
+                    </a>
+                `;
+                    grid.appendChild(item);
+                });
+                pagesContainer.appendChild(grid);
+                targetPageSelect.innerHTML += `<option value="${page.id}">${page.label}</option>`;
+            });
+            saveConfig(); // Déclenche la sauvegarde systèmatiquement après un changement
+        }
+
+        function saveConfig() {
+            localStorage.setItem('os_drag_v2', JSON.stringify(data));
+            if (accessToken && configFileId) {
+                uploadConfigToDrive();
+            }
+        }
+
+
+
+        function formatIcon(name) {
+            if (!name) return "fas fa-question";
+            if (name.includes(' ')) return name;
+            const brands = ['google', 'twitter', 'github', 'facebook', 'apple', 'youtube', 'instagram', 'linkedin', 'discord', 'whatsapp', 'twitch'];
+            const isBrand = brands.some(b => name.toLowerCase().includes(b));
+            return `${isBrand ? 'fab' : 'fas'} fa-${name.replace('fa-', '')}`;
+        }
+
+        function updatePreview() {
+            const iconName = document.getElementById('itemIcon').value || 'globe';
+            const color = document.getElementById('itemColor').value;
+            const previewEl = document.getElementById('iconPreview');
+            previewEl.style.background = color;
+            previewEl.innerHTML = `<i class="${formatIcon(iconName)}"></i>`;
+        }
+
+        function switchPage(id) { activePageId = id; render(); }
+
+        async function saveItem() {
+            const type = document.getElementById('typeSelector').value;
+            const name = document.getElementById('itemName').value || 'Sans Titre';
+            let icon = document.getElementById('itemIcon').value || 'globe';
+
+            if (type === 'page') {
+                const id = 'pg_' + Date.now();
+                data.pages.push({ id, label: name, icon: icon });
+                render(); hideModal();
+            } else if (type === 'file') {
+                if (!accessToken) {
+                    alert('Vous devez vous connecter à Google pour uploader un fichier.');
+                    return;
+                }
+                const fileInput = document.getElementById('itemFile');
+                if (!fileInput.files.length) {
+                    alert('Veuillez sélectionner un fichier.');
+                    return;
+                }
+                const file = fileInput.files[0];
+                const btn = document.getElementById('saveBtn');
+                btn.disabled = true;
+                btn.innerText = 'Upload en cours...';
+
+                try {
+                    const uploadedFile = await uploadFileToDrive(file);
+                    const color = document.getElementById('itemColor').value;
+                    const pageId = document.getElementById('targetPage').value || data.pages[0].id;
+                    if (!document.getElementById('itemIcon').value) icon = 'file'; // Default icon for file
+
+                    data.links.push({ name, url: uploadedFile.webViewLink, icon, color, page: pageId });
+                    render(); hideModal();
+                } catch (e) {
+                    console.error('Upload failed', e);
+                    alert("Erreur lors de l'upload.");
+                } finally {
+                    btn.disabled = false;
+                    btn.innerText = 'Enregistrer';
+                }
+            } else {
+                const url = document.getElementById('itemUrl').value;
+                const color = document.getElementById('itemColor').value;
+                const pageId = document.getElementById('targetPage').value;
+
+                if (editingItemName) {
+                    const item = data.links.find(l => l.name === editingItemName);
+                    if (item) {
+                        item.name = name;
+                        item.url = url;
+                        item.icon = icon;
+                        item.color = color;
+                        item.page = pageId;
+
+                        if (editingItemName !== name && data.groups) {
+                            data.groups.forEach(g => {
+                                const idx = g.items.indexOf(editingItemName);
+                                if (idx > -1) g.items[idx] = name;
+                            });
+                        }
+                    }
+                } else {
+                    data.links.push({ name, url, icon, color, page: pageId });
+                }
+                render(); hideModal();
+            }
+        }
+
+        function deleteLink(name) {
+            if (confirm(`Supprimer ${name} ?`)) {
+                data.links = data.links.filter(l => l.name !== name);
+
+                // Clean up any group that contained this link
+                if (data.groups) {
+                    data.groups.forEach(group => {
+                        group.items = group.items.filter(i => i !== name);
+                    });
+                    data.groups = data.groups.filter(group => group.items.length > 0);
+                }
+
+                render();
+            }
+        }
+
+        function openEditModal(name) {
+            const item = data.links.find(l => l.name === name);
+            if (!item) return;
+            editingItemName = name;
+
+            document.querySelector('#addModal h2').innerText = "Modifier l'Élément";
+            document.getElementById('itemName').value = item.name;
+            document.getElementById('itemUrl').value = item.url || '';
+            document.getElementById('itemIcon').value = item.icon.replace(/fa[brs]\sfa-/, '').replace('fa-', '');
+            document.getElementById('itemColor').value = item.color;
+
+            // Wait for render/DOM update to set targetPage correctly
+            setTimeout(() => { document.getElementById('targetPage').value = item.page; }, 50);
+
+            document.getElementById('typeSelector').value = 'link';
+            showModalInner();
+        }
+
+        function showModalInner() {
+            document.getElementById('addModal').style.display = 'flex';
+            updatePreview();
+            toggleInputs();
+        }
+
+        function showModal() {
+            editingItemName = null;
+            document.querySelector('#addModal h2').innerText = "Nouvel Élément";
+            document.getElementById('itemName').value = '';
+            document.getElementById('itemUrl').value = '';
+            document.getElementById('itemIcon').value = '';
+            document.getElementById('typeSelector').value = 'link';
+            showModalInner();
+        }
+        function hideModal() {
+            document.getElementById('addModal').style.display = 'none';
+            editingItemName = null;
+        }
+        function toggleInputs() {
+            const type = document.getElementById('typeSelector').value;
+            document.getElementById('linkOnlyFields').style.display = type === 'page' ? 'none' : 'block';
+            document.getElementById('itemUrl').style.display = type === 'link' ? 'block' : 'none';
+            document.getElementById('fileUploadFields').style.display = type === 'file' ? 'block' : 'none';
+        }
+
+        function updateClock() {
+            document.getElementById('clock').textContent = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+        }
+
+        function openGroupModal(group) {
+            const container = document.getElementById('group-modal-container');
+            const groupItems = group.items.map(itemName => data.links.find(l => l.name === itemName)).filter(Boolean);
+
+            let titleAttr = isEditMode ? 'contenteditable="true"' : '';
+            let html = `
+                <div class="group-modal" id="active-group-modal" style="display:grid; top: ${Math.max(20, group.y - 50)}px; left: ${Math.min(window.innerWidth - 400, group.x + 120)}px;">
+                    <button class="group-modal-close" onclick="closeGroupModal()"><i class="fas fa-times"></i></button>
+                    <div class="group-modal-title" ${titleAttr} onblur="if(isEditMode) renameGroup('${group.id}', this.innerText)">${group.name}</div>
+            `;
+
+            groupItems.forEach(link => {
+                html += `
+                    <div class="app-item" draggable="${isEditMode ? 'true' : 'false'}" data-id="${link.name}" ondragstart="startGroupItemDrag(event, '${link.name}')" ondragend="closeGroupModal()">
+                        <button class="edit-link" onclick="openEditModal('${link.name}')" title="Modifier"><i class="fas fa-pencil-alt"></i></button>
+                        <button class="delete-link" onclick="deleteLink('${link.name}')"><i class="fas fa-times"></i></button>
+                        <a href="${link.url}" target="_blank" style="text-decoration:none; color:inherit; display:contents;">
+                            <div class="icon-wrapper" style="background:${link.color}"><i class="${formatIcon(link.icon)}"></i></div>
+                            <span class="app-label">${link.name}</span>
+                        </a>
+                    </div>
+                `;
+            });
+
+            html += `</div>`;
+            container.innerHTML = html;
+
+            document.addEventListener('click', closeGroupModalOutside);
+        }
+
+        function startGroupItemDrag(e, linkName) {
+            if (!isEditMode) { e.preventDefault(); return; }
+            draggedItem = data.links.find(l => l.name === linkName);
+            e.dataTransfer.effectAllowed = "move";
+            if (e.dataTransfer.setData) e.dataTransfer.setData('text/plain', '');
+            const rect = e.target.closest('.app-item').getBoundingClientRect();
+            window.dragOffsetX = e.clientX - rect.left;
+            window.dragOffsetY = e.clientY - rect.top;
+
+            // Wait for the next tick to visually hide the modal content if desired, 
+            // but we MUST NOT remove the element from the DOM synchronously 
+            // otherwise the browser cancels the drag operation.
+            setTimeout(() => {
+                const modal = document.getElementById('active-group-modal');
+                if (modal) modal.style.display = 'none';
+            }, 0);
+        }
+
+        function closeGroupModal() {
+            const container = document.getElementById('group-modal-container');
+            if (container) container.innerHTML = '';
+            document.removeEventListener('click', closeGroupModalOutside);
+        }
+
+        function closeGroupModalOutside(e) {
+            if (!e.target.closest('.group-modal') && !e.target.closest('.app-group')) {
+                closeGroupModal();
+            }
+        }
+
+        function renameGroup(groupId, newName) {
+            const group = data.groups.find(g => g.id === groupId);
+            if (group) {
+                group.name = newName;
+                render();
+            }
+        }
+
+        // --- GOOGLE DRIVE LOGIC ---
+        function handleAuthClick() {
+            if (accessToken) {
+                google.accounts.oauth2.revoke(accessToken, () => {
+                    accessToken = null;
+                    document.getElementById('authBtn').className = 'tab-btn auth-btn disconnected';
+                });
+            } else {
+                tokenClient.requestAccessToken();
+            }
+        }
+
+        async function initGoogleDrive() {
+            gapi.client.init({}).then(() => {
+                gapi.client.load('drive', 'v3');
+            }).catch(e => console.error("GAPI Init Error", e));
+
+            tokenClient = google.accounts.oauth2.initTokenClient({
+                client_id: CLIENT_ID,
+                scope: SCOPES,
+                callback: async (tokenResponse) => {
+                    if (tokenResponse && tokenResponse.access_token) {
+                        accessToken = tokenResponse.access_token;
+                        document.getElementById('authBtn').className = 'tab-btn auth-btn connected';
+                        await setupDriveFolder();
+                    }
+                },
+            });
+        }
+
+        async function setupDriveFolder() {
+            // Find or Create 'My Web Desktop'
+            let r = await gapi.client.drive.files.list({
+                q: "mimeType='application/vnd.google-apps.folder' and name='My Web Desktop' and trashed=false",
+                fields: 'files(id, name)'
+            });
+            let files = r.result.files;
+            if (files && files.length > 0) {
+                desktopFolderId = files[0].id;
+            } else {
+                let metadata = { name: 'My Web Desktop', mimeType: 'application/vnd.google-apps.folder' };
+                let cr = await gapi.client.drive.files.create({ resource: metadata, fields: 'id' });
+                desktopFolderId = cr.result.id;
+            }
+
+            // Find or Create config.json
+            r = await gapi.client.drive.files.list({
+                q: `'${desktopFolderId}' in parents and name='desktop_config.json' and trashed=false`,
+                fields: 'files(id, name)'
+            });
+            files = r.result.files;
+            if (files && files.length > 0) {
+                configFileId = files[0].id;
+                downloadConfigFromDrive();
+            } else {
+                uploadConfigToDrive(true);
+            }
+        }
+
+        async function downloadConfigFromDrive() {
+            try {
+                const response = await fetch(`https://www.googleapis.com/drive/v3/files/${configFileId}?alt=media`, {
+                    headers: { 'Authorization': `Bearer ${accessToken}` }
+                });
+                const driveData = await response.json();
+                if (driveData && driveData.pages) {
+                    data = driveData;
+                    localStorage.setItem('os_drag_v2', JSON.stringify(data));
+                    render();
+                }
+            } catch (e) { console.error("Could not read config from Drive", e); }
+        }
+
+        async function uploadConfigToDrive(isNew = false) {
+            const metadata = { name: 'desktop_config.json', mimeType: 'application/json' };
+            if (isNew) metadata.parents = [desktopFolderId];
+            const fileContent = new Blob([JSON.stringify(data)], { type: 'application/json' });
+
+            const form = new FormData();
+            form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+            form.append('file', fileContent);
+
+            const url = isNew
+                ? 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart'
+                : `https://www.googleapis.com/upload/drive/v3/files/${configFileId}?uploadType=multipart`;
+            const method = isNew ? 'POST' : 'PATCH';
+
+            try {
+                const res = await fetch(url, { method, headers: { 'Authorization': `Bearer ${accessToken}` }, body: form });
+                const json = await res.json();
+                if (isNew && json.id) configFileId = json.id;
+            } catch (e) { console.error("Failed to upload config", e); }
+        }
+
+        async function uploadFileToDrive(file) {
+            const metadata = { name: file.name, parents: [desktopFolderId] };
+            const form = new FormData();
+            form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+            form.append('file', file);
+
+            const res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,webViewLink', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${accessToken}` },
+                body: form
+            });
+            return await res.json();
+        }
+
+        window.onload = function () {
+            gapi.load('client', initGoogleDrive);
+            setInterval(updateClock, 1000);
+            updateClock();
+            render();
+        };
+    </script>
+
+</body>
+
+</html>
