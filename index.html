@@ -211,7 +211,7 @@
             overflow: hidden;
         }
         
-        .left-panel {
+        .right-panel {
             width: 250px;
             padding: 0 20px;
             overflow-y: auto;
@@ -650,7 +650,7 @@
 
         <main class="main-container">
             <div class="status-bar">
-                <button id="authBtn" class="auth-btn disconnected" onclick="handleAuthClick()" title="Connexion Google" style="border:none; border-radius:20px; padding:6px 12px; cursor:pointer; display:flex; align-items:center; gap:8px;">
+                <button id="authBtn" class="auth-btn disconnected" onclick="handleAuthClick()" title="Connexion Google" style="width: fit-content; border:none; border-radius:20px; padding:6px 12px; cursor:pointer; display:flex; align-items:center; gap:8px;">
                     <i class="fab fa-google"></i> <span style="font-size: 13px;" id="authBtnText">Connexion</span>
                 </button>
                 <div style="text-align: right;">
@@ -665,12 +665,12 @@
             </div>
             
             <div class="desktop-layout">
-                <div class="left-panel">
+                <div class="content-area" id="pages-container"></div>
+                <div class="right-panel">
                     <div id="calendar-widget" class="calendar-widget">
                         <!-- Agenda sera injecté ici -->
                     </div>
                 </div>
-                <div class="content-area" id="pages-container"></div>
             </div>
             
             <div id="group-modal-container"></div>
