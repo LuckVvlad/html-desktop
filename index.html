@@ -1366,7 +1366,7 @@
             }
         }
 
-        // --- GOOGLE DRIVE LOGIC ---
+        // --- GOOGLE API LOGIC ---
         function handleAuthClick() {
             if (accessToken) {
                 google.accounts.oauth2.revoke(accessToken, () => {
@@ -1374,7 +1374,8 @@
                     document.getElementById('authBtn').className = 'tab-btn auth-btn disconnected';
                 });
             } else {
-                tokenClient.requestAccessToken();
+                // Forcer le consentement pour s'assurer que toutes les cases soient cochées (ex: Agenda)
+                tokenClient.requestAccessToken({prompt: 'consent'});
             }
         }
 
@@ -1396,18 +1397,6 @@
                     }
                 },
             });
-
-            // Initialiser l'invite silencieuse (One Tap) si possible
-            google.accounts.id.initialize({
-                client_id: CLIENT_ID,
-                callback: (res) => {
-                    // One-Tap retourne un JWT (Credential), mais TokenClient est requis pour l'accès API
-                    // On peut activer le auto-select pour les prochaines fois ou lancer le token client silencieusement
-                    if (!accessToken) tokenClient.requestAccessToken({prompt: 'none'});
-                },
-                auto_select: true
-            });
-            google.accounts.id.prompt();
         }
 
         async function setupDriveFolder() {
