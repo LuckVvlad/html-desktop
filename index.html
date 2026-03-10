@@ -449,6 +449,100 @@
             cursor: pointer;
             text-decoration: underline;
         }
+        /* --- EXPLORER MODAL --- */
+        .explorer-modal {
+            display: none;
+            position: fixed;
+            z-index: 150;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(8px);
+        }
+        .explorer-content {
+            background: #181818;
+            padding: 30px;
+            border-radius: 24px;
+            width: 800px;
+            height: 600px;
+            max-width: 90vw;
+            max-height: 90vh;
+            border: 1px solid #333;
+            display: flex;
+            flex-direction: column;
+        }
+        .explorer-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 15px;
+        }
+        .explorer-title {
+            font-size: 22px;
+            margin: 0;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .explorer-list {
+            flex: 1;
+            overflow-y: auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            padding-right: 10px;
+        }
+        .explorer-item {
+            background: #2a2a2a;
+            border: 1px solid #444;
+            border-radius: 12px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            gap: 10px;
+            transition: transform 0.2s, background 0.2s;
+        }
+        .explorer-item:hover {
+            transform: scale(1.05);
+            background: #333;
+        }
+        .explorer-item-icon {
+            font-size: 32px;
+            color: #4285f4;
+        }
+        .explorer-item-name {
+            font-size: 12px;
+            word-break: break-word;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            color: #ddd;
+        }
+        .add-to-desktop-btn {
+            background: #34a853;
+            border: none;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 11px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+        }
+        .add-to-desktop-btn:hover {
+            background: #2c8c45;
+        }
     </style>
 </head>
 
@@ -459,6 +553,7 @@
             <div class="sidebar-bottom">
                 <button id="editModeBtn" class="tab-btn" onclick="toggleEditMode()" title="Mode Édition"
                     style="background: rgba(255,165,0,0.8);"><i class="fas fa-pencil-ruler"></i></button>
+                <button class="tab-btn add-btn" onclick="openFileExplorer()" title="Fichiers Drive" style="background: #4285f4;"><i class="fas fa-folder-open"></i></button>
                 <button id="authBtn" class="tab-btn auth-btn disconnected" onclick="handleAuthClick()"
                     title="Connexion Google"><i class="fab fa-google"></i></button>
                 <button class="tab-btn add-btn" onclick="showModal()" title="Ajouter"><i
@@ -527,6 +622,21 @@
 
             <button id="saveBtn" class="save-btn" onclick="saveItem()">Enregistrer</button>
             <button class="cancel-btn" onclick="hideModal()">Annuler</button>
+        </div>
+    </div>
+
+    <div id="explorerModal" class="explorer-modal">
+        <div class="explorer-content">
+            <div class="explorer-header">
+                <h2 class="explorer-title"><i class="fab fa-google-drive"></i> Fichiers "My Web Desktop"</h2>
+                <button class="cancel-btn" style="width:auto; margin:0;" onclick="closeFileExplorer()"><i class="fas fa-times" style="font-size:20px;"></i></button>
+            </div>
+            <div id="explorerList" class="explorer-list">
+                <!-- Fichiers injectés dynamiquement ici -->
+                <div style="color: #888; text-align: center; width: 100%; grid-column: 1 / -1; margin-top: 50px;">
+                    Chargement des fichiers...
+                </div>
+            </div>
         </div>
     </div>
 
@@ -1149,6 +1259,74 @@
                 body: form
             });
             return await res.json();
+        }
+
+        // --- EXPLORER LOGIC ---
+        function openFileExplorer() {
+            if (!accessToken) {
+                alert('Veuillez vous connecter à Google pour voir vos fichiers.');
+                return;
+            }
+            document.getElementById('explorerModal').style.display = 'flex';
+            loadExplorerFiles();
+        }
+
+        function closeFileExplorer() {
+            document.getElementById('explorerModal').style.display = 'none';
+        }
+
+        async function loadExplorerFiles() {
+            const listEl = document.getElementById('explorerList');
+            listEl.innerHTML = '<div style="color: #888; text-align: center; width: 100%; grid-column: 1 / -1; margin-top: 50px;">Chargement des fichiers...</div>';
+            
+            try {
+                // Fetch files inside 'My Web Desktop' folder
+                const r = await gapi.client.drive.files.list({
+                    q: `'${desktopFolderId}' in parents and trashed=false and mimeType!='application/vnd.google-apps.folder'`,
+                    fields: 'files(id, name, webViewLink, iconLink, mimeType)'
+                });
+                
+                const files = r.result.files;
+                listEl.innerHTML = '';
+                
+                if (!files || files.length === 0) {
+                    listEl.innerHTML = '<div style="color: #888; text-align: center; width: 100%; grid-column: 1 / -1; margin-top: 50px;">Aucun fichier trouvé dans My Web Desktop.</div>';
+                    return;
+                }
+                
+                files.forEach(file => {
+                    const isImage = file.mimeType.startsWith('image/');
+                    const isPdf = file.mimeType === 'application/pdf';
+                    let iconHtml = `<i class="fas fa-file-alt"></i>`;
+                    
+                    if (isImage) iconHtml = `<i class="fas fa-image" style="color:#fbbc05;"></i>`;
+                    if (isPdf) iconHtml = `<i class="fas fa-file-pdf" style="color:#ea4335;"></i>`;
+                    
+                    const el = document.createElement('div');
+                    el.className = 'explorer-item';
+                    el.innerHTML = `
+                        <div class="explorer-item-icon">${iconHtml}</div>
+                        <div class="explorer-item-name" title="${file.name}">${file.name}</div>
+                        <button class="add-to-desktop-btn" onclick="addDriveFileToDesktop('${file.name.replace(/'/g, "\\'")}', '${file.webViewLink}')">
+                            <i class="fas fa-plus"></i> Ajouter au bureau
+                        </button>
+                    `;
+                    listEl.appendChild(el);
+                });
+            } catch(e) {
+                console.error("Error loading files", e);
+                listEl.innerHTML = '<div style="color: #ea4335; text-align: center; width: 100%; grid-column: 1 / -1; margin-top: 50px;">Erreur lors du chargement.</div>';
+            }
+        }
+
+        function addDriveFileToDesktop(name, url) {
+            const pageId = activePageId;
+            const icon = 'file-alt';
+            const color = '#34a853';
+            
+            data.links.push({ name, url, icon, color, page: pageId });
+            render();
+            closeFileExplorer();
         }
 
         window.onload = function () {
