@@ -102,14 +102,73 @@
             background: #4285f4;
             color: white;
             font-size: 14px;
+            transition: background 0.2s;
         }
+        .auth-btn.connected { background: #34a853; }
+        .auth-btn.disconnected { background: #ea4335; }
 
-        .auth-btn.connected {
-            background: #34a853;
+        /* --- CALENDAR WIDGET --- */
+        .calendar-widget {
+            background: rgba(40, 40, 40, 0.6);
+            border-radius: 15px;
+            padding: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: white;
         }
-
-        .auth-btn.disconnected {
-            background: #ea4335;
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 2px;
+            text-align: center;
+        }
+        .calendar-grid-header {
+            font-size: 10px;
+            color: #888;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .calendar-day {
+            width: 30px;
+            height: 30px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-size: 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            position: relative;
+        }
+        .calendar-day:hover {
+            background: rgba(255,255,255,0.1);
+        }
+        .calendar-day.today {
+            background: #4285f4;
+            color: white;
+            font-weight: bold;
+        }
+        .calendar-day.other-month {
+            color: #555;
+        }
+        .event-dots {
+            display: flex;
+            gap: 2px;
+            position: absolute;
+            bottom: 3px;
+        }
+        .event-dot {
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
         }
 
         /* --- CONTENU --- */
@@ -121,10 +180,11 @@
 
         .status-bar {
             padding: 15px 40px;
-            text-align: right;
-            font-size: 18px;
-            font-weight: 500;
             text-shadow: 0 2px 4px #000;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 20px;
         }
 
         .search-section {
@@ -145,9 +205,21 @@
             outline: none;
         }
 
+        .desktop-layout {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+        
+        .left-panel {
+            width: 250px;
+            padding: 0 20px;
+            overflow-y: auto;
+        }
+
         .content-area {
             flex: 1;
-            padding: 20px 50px;
+            padding: 0 50px;
             overflow-y: auto;
         }
 
@@ -569,8 +641,6 @@
                 <button id="editModeBtn" class="tab-btn" onclick="toggleEditMode()" title="Mode Édition"
                     style="background: rgba(255,165,0,0.8);"><i class="fas fa-pencil-ruler"></i></button>
                 <button class="tab-btn add-btn" onclick="openFileExplorer()" title="Fichiers Drive" style="background: #4285f4;"><i class="fas fa-folder-open"></i></button>
-                <button id="authBtn" class="tab-btn auth-btn disconnected" onclick="handleAuthClick()"
-                    title="Connexion Google"><i class="fab fa-google"></i></button>
                 <button class="tab-btn add-btn" onclick="showModal()" title="Ajouter"><i
                         class="fas fa-plus"></i></button>
                 <a href="https://mail.google.com" target="_blank" class="tab-btn gmail-btn" title="Gmail"><i
@@ -579,13 +649,30 @@
         </nav>
 
         <main class="main-container">
-            <div class="status-bar"><span id="clock">00:00</span></div>
+            <div class="status-bar">
+                <button id="authBtn" class="auth-btn disconnected" onclick="handleAuthClick()" title="Connexion Google" style="border:none; border-radius:20px; padding:6px 12px; cursor:pointer; display:flex; align-items:center; gap:8px;">
+                    <i class="fab fa-google"></i> <span style="font-size: 13px;" id="authBtnText">Connexion</span>
+                </button>
+                <div style="text-align: right;">
+                    <div id="currentDate" style="font-size: 14px; color: rgba(255,255,255,0.7); font-weight: normal; margin-bottom: 2px;"></div>
+                    <div id="clock" style="font-size: 24px; font-weight: 500;">00:00</div>
+                </div>
+            </div>
             <div class="search-section">
                 <form action="https://www.google.com/search" method="get" target="_blank">
                     <input type="text" name="q" class="search-bar" placeholder="Rechercher sur Google...">
                 </form>
             </div>
-            <div class="content-area" id="pages-container"></div>
+            
+            <div class="desktop-layout">
+                <div class="left-panel">
+                    <div id="calendar-widget" class="calendar-widget">
+                        <!-- Agenda sera injecté ici -->
+                    </div>
+                </div>
+                <div class="content-area" id="pages-container"></div>
+            </div>
+            
             <div id="group-modal-container"></div>
         </main>
     </div>
@@ -707,7 +794,7 @@
         };
 
         const CLIENT_ID = '442951396586-hkf0co389rsq7u2oqi7aula9d16ppkmi.apps.googleusercontent.com';
-        const SCOPES = 'https://www.googleapis.com/auth/drive.file';
+        const SCOPES = 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/calendar.readonly';
         let tokenClient;
         let accessToken = null;
         let desktopFolderId = null;
@@ -1115,7 +1202,12 @@
         }
 
         function updateClock() {
-            document.getElementById('clock').textContent = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+            const now = new Date();
+            document.getElementById('clock').textContent = now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+            
+            const options = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
+            const dateStr = now.toLocaleDateString('fr-FR', options);
+            document.getElementById('currentDate').textContent = dateStr.charAt(0).toUpperCase() + dateStr.slice(1);
         }
 
         function openGroupModal(group) {
@@ -1201,15 +1293,17 @@
         async function initGoogleDrive() {
             gapi.client.init({}).then(() => {
                 gapi.client.load('drive', 'v3');
+                gapi.client.load('calendar', 'v3');
             }).catch(e => console.error("GAPI Init Error", e));
 
-            tokenClient = google.accounts.oauth2.initTokenClient({
+        tokenClient = google.accounts.oauth2.initTokenClient({
                 client_id: CLIENT_ID,
                 scope: SCOPES,
                 callback: async (tokenResponse) => {
                     if (tokenResponse && tokenResponse.access_token) {
                         accessToken = tokenResponse.access_token;
                         document.getElementById('authBtn').className = 'tab-btn auth-btn connected';
+                        fetchCalendarEvents();
                         await setupDriveFolder();
                     }
                 },
@@ -1397,10 +1491,152 @@
             if (accessToken) uploadConfigToDrive();
         }
 
+        // --- CALENDAR LOGIC ---
+        let currentDateDisplay = new Date();
+        let eventsData = [];
+
+        function renderCalendarWidget() {
+            const container = document.getElementById('calendar-widget');
+            if (!container) return;
+
+            const year = currentDateDisplay.getFullYear();
+            const month = currentDateDisplay.getMonth();
+            const today = new Date();
+
+            const monthNames = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"];
+            const jours = ["L", "M", "M", "J", "V", "S", "D"];
+
+            let firstDay = new Date(year, month, 1).getDay();
+            firstDay = firstDay === 0 ? 6 : firstDay - 1;
+
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const prevMonthDays = new Date(year, month, 0).getDate();
+
+            let html = `
+                <div class="calendar-header">
+                    <button class="tab-btn" style="padding: 2px 8px;" onclick="changeMonth(-1)"><i class="fas fa-chevron-left"></i></button>
+                    <div>${monthNames[month]} ${year}</div>
+                    <button class="tab-btn" style="padding: 2px 8px;" onclick="changeMonth(1)"><i class="fas fa-chevron-right"></i></button>
+                </div>
+                <div class="calendar-grid">
+            `;
+
+            jours.forEach(j => {
+                html += `<div class="calendar-grid-header">${j}</div>`;
+            });
+
+            // On génère 35 jours (5 semaines) minimum, jusqu'à 42 si nécessaire pour ne pas tronquer
+            const totalCells = (firstDay + daysInMonth > 35) ? 42 : 35;
+            
+            for (let i = 0; i < totalCells; i++) {
+                let dayNum, isOtherMonth = false, cellDate;
+                if (i < firstDay) {
+                    dayNum = prevMonthDays - firstDay + i + 1;
+                    isOtherMonth = true;
+                    cellDate = new Date(year, month - 1, dayNum);
+                } else if (i >= firstDay + daysInMonth) {
+                    dayNum = i - (firstDay + daysInMonth) + 1;
+                    isOtherMonth = true;
+                    cellDate = new Date(year, month + 1, dayNum);
+                } else {
+                    dayNum = i - firstDay + 1;
+                    cellDate = new Date(year, month, dayNum);
+                }
+
+                const isToday = !isOtherMonth && 
+                                dayNum === today.getDate() && 
+                                month === today.getMonth() && 
+                                year === today.getFullYear();
+                
+                const classNames = `calendar-day ${isOtherMonth ? 'other-month' : ''} ${isToday ? 'today' : ''}`;
+                
+                const tzOffset = cellDate.getTimezoneOffset() * 60000;
+                const localISOTime = (new Date(cellDate - tzOffset)).toISOString().slice(0, -1);
+                const dayStr = localISOTime.split('T')[0];
+                
+                const dayEvents = eventsData.filter(e => {
+                    const eStart = e.start.dateTime || e.start.date;
+                    if (!eStart) return false;
+                    return eStart.startsWith(dayStr);
+                });
+
+                let dotsHtml = '';
+                if (dayEvents.length > 0) {
+                    dotsHtml = `<div class="event-dots">`;
+                    const maxDots = Math.min(dayEvents.length, 3);
+                    for(let d=0; d<maxDots; d++) {
+                        dotsHtml += `<div class="event-dot"></div>`;
+                    }
+                    dotsHtml += `</div>`;
+                }
+
+                html += `<div class="${classNames}" onclick="showDayEvents('${dayStr}')">${dayNum}${dotsHtml}</div>`;
+            }
+
+            html += `</div>`;
+            container.innerHTML = html;
+        }
+
+        function changeMonth(delta) {
+            currentDateDisplay.setMonth(currentDateDisplay.getMonth() + delta);
+            renderCalendarWidget();
+            if (accessToken) fetchCalendarEvents();
+        }
+
+        async function fetchCalendarEvents() {
+            if (!accessToken || !gapi.client.calendar) return;
+
+            const year = currentDateDisplay.getFullYear();
+            const month = currentDateDisplay.getMonth();
+            
+            const timeMin = new Date(year, month - 1, 1).toISOString();
+            const timeMax = new Date(year, month + 2, 0).toISOString();
+
+            try {
+                const response = await gapi.client.calendar.events.list({
+                    'calendarId': 'primary',
+                    'timeMin': timeMin,
+                    'timeMax': timeMax,
+                    'showDeleted': false,
+                    'singleEvents': true,
+                    'maxResults': 250,
+                    'orderBy': 'startTime'
+                });
+                eventsData = response.result.items;
+                renderCalendarWidget();
+            } catch (e) {
+                console.error("Error fetching calendar events", e);
+            }
+        }
+
+        function showDayEvents(dateStr) {
+            const dayEvents = eventsData.filter(e => {
+                const eStart = e.start.dateTime || e.start.date;
+                return eStart && eStart.startsWith(dateStr);
+            });
+
+            if (dayEvents.length === 0) {
+                alert("Aucun événement pour cette journée.");
+                return;
+            }
+
+            let text = `Événements du ${dateStr} :\n\n`;
+            dayEvents.forEach(e => {
+                let timeStr = "Toute la journée";
+                if (e.start.dateTime) {
+                    const d = new Date(e.start.dateTime);
+                    timeStr = d.toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'});
+                }
+                text += `- ${timeStr} : ${e.summary}\n`;
+            });
+            alert(text);
+        }
+
         window.onload = function () {
             gapi.load('client', initGoogleDrive);
             setInterval(updateClock, 1000);
             updateClock();
+            renderCalendarWidget();
             render();
         };
     </script>
