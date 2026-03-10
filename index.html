@@ -124,6 +124,17 @@
             font-size: 14px;
             font-weight: bold;
         }
+        .calendar-nav-btn {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 4px 10px;
+            font-size: 10px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .calendar-nav-btn:hover { background: rgba(255,255,255,0.2); }
         .calendar-grid {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
@@ -871,7 +882,7 @@
         };
 
         const CLIENT_ID = '442951396586-hkf0co389rsq7u2oqi7aula9d16ppkmi.apps.googleusercontent.com';
-        const SCOPES = 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/calendar.readonly https://www.googleapis.com/auth/calendar.events';
+        const SCOPES = 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/calendar';
         let tokenClient;
         let accessToken = null;
         let desktopFolderId = null;
@@ -1603,9 +1614,9 @@
 
             let html = `
                 <div class="calendar-header">
-                    <button class="tab-btn" style="padding: 2px 5px; font-size: 10px;" onclick="changeMonth(-1)"><i class="fas fa-chevron-left"></i></button>
+                    <button class="calendar-nav-btn" onclick="changeMonth(-1)"><i class="fas fa-chevron-left"></i></button>
                     <div>${monthNames[month]} ${year}</div>
-                    <button class="tab-btn" style="padding: 2px 5px; font-size: 10px;" onclick="changeMonth(1)"><i class="fas fa-chevron-right"></i></button>
+                    <button class="calendar-nav-btn" onclick="changeMonth(1)"><i class="fas fa-chevron-right"></i></button>
                 </div>
                 <div class="calendar-grid">
             `;
