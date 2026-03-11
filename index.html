@@ -735,10 +735,16 @@
         </nav>
 
         <main class="main-container">
-            <div class="status-bar">
+            <div class="status-bar" style="position: relative;">
                 <button id="authBtn" class="auth-btn disconnected" onclick="handleAuthClick()" title="Connexion Google" style="width: fit-content; border:none; border-radius:20px; padding:6px 12px; cursor:pointer; display:flex; align-items:center; gap:8px;">
                     <i class="fab fa-google"></i> <span style="font-size: 13px;" id="authBtnText">Connexion</span>
                 </button>
+                
+                <!-- VERSION NUMBER -->
+                <div id="appVersion" style="position: absolute; left: 50%; transform: translateX(-50%); font-size: 11px; color: rgba(255,255,255,0.3); pointer-events: none;">
+                    v51caa45
+                </div>
+
                 <div style="text-align: right;">
                     <div id="currentDate" style="font-size: 14px; color: rgba(255,255,255,0.7); font-weight: normal; margin-bottom: 2px;"></div>
                     <div id="clock" style="font-size: 24px; font-weight: 500;">00:00</div>
