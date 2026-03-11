@@ -227,7 +227,7 @@
         .hour-row {
             position: absolute;
             left: 0;
-            width: 100%;
+            right: 0;
             height: 30px; /* 60 mins * 0.5px */
             border-bottom: 1px solid rgba(255,255,255,0.05);
             display: flex;
@@ -1796,13 +1796,6 @@
                     `;
                 }
             });
-
-            // DEBUG BLOCK ALWAYS VISIBLE
-            html += `
-                <div class="event-block" style="top: 10px; height: 30px; background: #ea4335; border-color: #c5221f; z-index: 100;" title="DEBUG">
-                    DEBUG: ${dayEvents.length} events matching ${dateStr}
-                </div>
-            `;
 
             html += `</div>`;
             widget.innerHTML = html;
