@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://apis.google.com/js/api.js"></script>
     <script src="https://accounts.google.com/gsi/client"></script>
+    <script src="https://alcdn.msauth.net/browser/2.35.0/js/msal-browser.min.js"></script>
     <style>
         :root {
             --bg-url: url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop');
@@ -284,6 +285,59 @@
             cursor: pointer;
         }
         .event-block:hover { background: rgba(66, 133, 244, 1); }
+
+        /* --- OUTLOOK WIDGET --- */
+        .outlook-widget {
+            margin-top: 8px;
+            background: rgba(40, 40, 40, 0.6);
+            border-radius: 15px;
+            padding: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            max-height: 300px;
+        }
+        .outlook-header {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 15px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #0078d4;
+        }
+        .email-list {
+            overflow-y: auto;
+            flex: 1;
+        }
+        .email-item {
+            padding: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            cursor: pointer;
+            transition: background 0.2s;
+            border-radius: 8px;
+            margin-bottom: 5px;
+        }
+        .email-item:hover {
+            background: rgba(255,255,255,0.05);
+        }
+        .email-subject {
+            font-size: 12px;
+            font-weight: bold;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 3px;
+        }
+        .email-from {
+            font-size: 10px;
+            color: #888;
+        }
+        .email-list::-webkit-scrollbar { width: 6px; }
+        .email-list::-webkit-scrollbar-track { background: transparent; }
+        .email-list::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 3px; }
 
         /* --- CONTENU --- */
         .main-container {
@@ -759,6 +813,7 @@
                         class="fas fa-plus"></i></button>
                 <a href="https://mail.google.com" target="_blank" class="tab-btn gmail-btn" title="Gmail"><i
                         class="fas fa-envelope"></i></a>
+                <button id="msAuthBtn" class="tab-btn" onclick="handleMsAuthClick()" title="Connexion Outlook" style="background: #0078d4;"><i class="fab fa-microsoft"></i></button>
             </div>
         </nav>
 
@@ -792,6 +847,9 @@
                     </div>
                     <div id="daily-agenda-widget" class="daily-agenda" style="display:none;">
                         <!-- Vue quotidienne injectée ici -->
+                    </div>
+                    <div id="outlook-widget" class="outlook-widget" style="display:none;">
+                        <!-- Emails Outlook injectés ici -->
                     </div>
                 </div>
             </div>
@@ -914,6 +972,26 @@
                 { name: 'Midjourney', url: 'https://www.midjourney.com', icon: 'fa-paint-brush', color: '#000', page: 'ai' },
                 { name: 'Mistral', url: 'https://mistral.ai', icon: 'fa-wind', color: '#f36e21', page: 'ai' }
             ]
+        };
+
+        // --- CONFIGURATION MICROSOFT ---
+        const msalConfig = {
+            auth: {
+                clientId: "f81bf54d-014d-440f-a99e-9f691f933325",
+                authority: "https://login.microsoftonline.com/common",
+                redirectUri: "http://localhost:5500"
+            },
+            cache: {
+                cacheLocation: "localStorage",
+                storeAuthStateInCookie: false,
+            }
+        };
+
+        const msalInstance = new msal.PublicClientApplication(msalConfig);
+        let microsoftAccount = null;
+
+        const msScopes = {
+            scopes: ["User.Read", "Mail.Read"]
         };
 
         const CLIENT_ID = '442951396586-hkf0co389rsq7u2oqi7aula9d16ppkmi.apps.googleusercontent.com';
@@ -1876,8 +1954,113 @@
             }
         }
 
-        window.onload = function () {
+        // --- OUTLOOK LOGIC ---
+        async function handleMsAuthClick() {
+            if (microsoftAccount) {
+                await msalInstance.logoutPopup({ account: microsoftAccount });
+                microsoftAccount = null;
+                updateMsUI();
+                const oWidget = document.getElementById('outlook-widget');
+                if (oWidget) oWidget.style.display = 'none';
+            } else {
+                try {
+                    const loginResponse = await msalInstance.loginPopup(msScopes);
+                    microsoftAccount = loginResponse.account;
+                    updateMsUI();
+                    fetchOutlookEmails();
+                } catch (error) {
+                    console.error("Microsoft login error", error);
+                }
+            }
+        }
+
+        function updateMsUI() {
+            const btn = document.getElementById('msAuthBtn');
+            if (microsoftAccount) {
+                btn.style.background = '#34a853'; // Vert si connecté
+                btn.title = `Connecté: ${microsoftAccount.username}`;
+            } else {
+                btn.style.background = '#0078d4'; // Bleu Microsoft
+                btn.title = "Connexion Outlook";
+            }
+        }
+
+        async function fetchOutlookEmails() {
+            if (!microsoftAccount) return;
+
+            try {
+                // Obtenir un token silencieusement
+                const tokenResponse = await msalInstance.acquireTokenSilent({
+                    ...msScopes,
+                    account: microsoftAccount
+                });
+                
+                const graphUrl = "https://graph.microsoft.com/v1.0/me/messages?$select=subject,from,receivedDateTime,isRead&$top=10&$filter=isRead eq false";
+                const response = await fetch(graphUrl, {
+                    headers: { 'Authorization': `Bearer ${tokenResponse.accessToken}` }
+                });
+                const responseData = await response.json();
+                renderOutlookWidget(responseData.value);
+            } catch (error) {
+                console.error("Error fetching emails", error);
+                if (error instanceof msal.InteractionRequiredAuthError) {
+                    msalInstance.acquireTokenPopup(msScopes);
+                }
+            }
+        }
+
+        function renderOutlookWidget(emails) {
+            const container = document.getElementById('outlook-widget');
+            if (!container) return;
+            container.style.display = 'flex';
+
+            let listHtml = `
+                <div class="outlook-header">
+                    <i class="fab fa-microsoft" style="margin-right: 8px;"></i> Outlook
+                </div>
+                <div class="email-list">
+            `;
+
+            if (!emails || emails.length === 0) {
+                listHtml += `<div style="text-align:center; color:#888; font-size:12px; padding:20px;">Aucun nouveau message.</div>`;
+            } else {
+                emails.forEach(email => {
+                    const fromName = (email.from && email.from.emailAddress) ? (email.from.emailAddress.name || email.from.emailAddress.address) : 'Inconnu';
+                    listHtml += `
+                        <div class="email-item">
+                            <div class="email-subject">${email.subject || '(Pas de sujet)'}</div>
+                            <div class="email-from">${fromName}</div>
+                        </div>
+                    `;
+                });
+            }
+
+            listHtml += `</div>`;
+            container.innerHTML = listHtml;
+        }
+
+        window.onload = async function () {
             gapi.load('client', initGoogleDrive);
+            
+            // Initialisation MSAL
+            try {
+                const response = await msalInstance.handleRedirectPromise();
+                if (response) {
+                    microsoftAccount = response.account;
+                    updateMsUI();
+                    fetchOutlookEmails();
+                } else {
+                    const accounts = msalInstance.getAllAccounts();
+                    if (accounts.length > 0) {
+                        microsoftAccount = accounts[0];
+                        updateMsUI();
+                        fetchOutlookEmails();
+                    }
+                }
+            } catch (error) {
+                console.error("MSAL init error", error);
+            }
+
             setInterval(updateClock, 1000);
             updateClock();
             renderCalendarWidget();
