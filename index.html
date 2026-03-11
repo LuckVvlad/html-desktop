@@ -214,15 +214,15 @@
             cursor: pointer;
         }
         .add-event-btn:hover { background: #2c8c45; }
-        
         .daily-scroll {
-            flex: 1;
+            min-height: 250px;
             overflow-y: auto;
             position: relative;
             /* Une minute = 1px, donc de 6h (360m) à 20h (1200m) = 840px de hauteur totale */
             height: 420px; /* On scale par 0.5 pour que ça prenne moins de place, donc 1 min = 0.5px */
             background: rgba(0,0,0,0.2);
             border-radius: 8px;
+            flex-shrink: 0;
         }
         .hour-row {
             position: absolute;
