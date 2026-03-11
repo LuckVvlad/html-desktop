@@ -1693,6 +1693,7 @@
                     'orderBy': 'startTime'
                 });
                 eventsData = response.result.items;
+                console.log("Calendar events fetched:", eventsData);
                 renderCalendarWidget();
             } catch (e) {
                 console.error("Error fetching calendar events", e);
