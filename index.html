@@ -1705,9 +1705,15 @@
                 });
                 eventsData = response.result.items;
                 console.log("Total events fetched:", eventsData.length);
-                if(eventsData.length > 0) {
-                    console.log("Sample event start data:", eventsData[0].start);
-                }
+                
+                // Debug complet des dates pour trouver pourquoi ça ne s'affiche pas
+                eventsData.forEach((e, i) => {
+                    const eStart = e.start.dateTime || e.start.date;
+                    let datePart = eStart;
+                    if(eStart && eStart.includes('T')) datePart = eStart.split('T')[0];
+                    console.log(`Event ${i}: ${e.summary} -> ${datePart} (Raw: ${eStart})`);
+                });
+
                 renderCalendarWidget();
             } catch (e) {
                 console.error("Error fetching calendar events", e);
