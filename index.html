@@ -1391,8 +1391,9 @@
                 callback: async (tokenResponse) => {
                     if (tokenResponse && tokenResponse.access_token) {
                         accessToken = tokenResponse.access_token;
+                        gapi.client.setToken({access_token: accessToken});
                         document.getElementById('authBtn').className = 'tab-btn auth-btn connected';
-                        fetchCalendarEvents();
+                        await fetchCalendarEvents();
                         await setupDriveFolder();
                     }
                 },
@@ -1646,8 +1647,12 @@
                 const dayEvents = eventsData.filter(e => {
                     const eStart = e.start.dateTime || e.start.date;
                     if (!eStart) return false;
-                    // Fix: On coupe le string à 10 chars pour 'YYYY-MM-DD'
-                    return eStart.substring(0, 10) === dayStr;
+                    
+                    let datePart = eStart;
+                    if(eStart.includes('T')) {
+                        datePart = eStart.split('T')[0];
+                    }
+                    return datePart === dayStr;
                 });
 
                 let dotsHtml = '';
@@ -1697,6 +1702,7 @@
                 renderCalendarWidget();
             } catch (e) {
                 console.error("Error fetching calendar events", e);
+                alert("Erreur lors de la lecture des événements: " + e.message);
             }
         }
 
@@ -1714,8 +1720,17 @@
 
             const dayEvents = eventsData.filter(e => {
                 const eStart = e.start.dateTime || e.start.date;
-                // Fix: Comparer uniquement les 10 premiers caractères (YYYY-MM-DD)
-                return eStart && eStart.substring(0, 10) === dateStr;
+                // eStart est "2026-03-10T14:30:00-04:00" ou "2026-03-10"
+                if (!eStart) return false;
+                
+                // Pour éviter le timezone offset qui change la date locale
+                // on va s'assurer de bien extraire juste la portion YYYY-MM-DD
+                let datePart = eStart;
+                if(eStart.includes('T')) {
+                    datePart = eStart.split('T')[0];
+                }
+                
+                return datePart === dateStr;
             });
 
             let html = `
