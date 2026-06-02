@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Découvrez le Codex Nordique : un outil d'apprentissage interactif sur la mythologie et l'histoire des Vikings. / Discover the Norse Codex: an interactive learning tool about Viking mythology and history.">
+    <meta name="keywords" content="Vikings, Mythologie Nordique, Norse Mythology, Runes Futhark, Viking History, Asgard, Yggdrasil, Mjölnir, Valhalla">
+    <meta name="author" content="Mathieu Lachance">
+    <meta name="theme-color" content="#080c15">
+    <meta name="referrer" content="no-referrer">
+    
+    <!-- Open Graph / Facebook / LinkedIn -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://sagesse-nord.netlify.app/">
+    <meta property="og:title" content="Sagesse du Nord - Culture Viking">
+    <meta property="og:description" content="Grimoire interactif d'apprentissage : explorez l'héritage, les runes et la mythologie des Vikings.">
+    <meta property="og:image" content="https://sagesse-nord.netlify.app/assets/yggdrasil.png">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://sagesse-nord.netlify.app/">
+    <meta property="twitter:title" content="Sagesse du Nord - Culture Viking">
+    <meta property="twitter:description" content="Grimoire interactif d'apprentissage : explorez l'héritage, les runes et la mythologie des Vikings.">
+    <meta property="twitter:image" content="https://sagesse-nord.netlify.app/assets/yggdrasil.png">
+
+    <title>Sagesse du Nord - Culture Viking</title>
+
+    <!-- PWA Manifest & Icons -->
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles/main.css?v=1.2">
+</head>
+<body>
+    <div class="background-overlay"></div>
+    
+    <header class="glass-panel">
+        <h1 data-i18n="site_title">Sagesse du Nord</h1>
+        <p data-i18n="site_subtitle">Explorez l'héritage, les runes et la mythologie des Vikings</p>
+        <nav>
+            <button class="nav-btn active" data-target="home" data-i18n="nav_home">Accueil</button>
+            <button class="nav-btn" data-target="runes" data-i18n="nav_runes">Runes Futhark</button>
+            <button class="nav-btn" data-target="mythology" data-i18n="nav_mythology">Mythologie</button>
+            <button class="nav-btn" data-target="characters" data-i18n="nav_characters">Personnages</button>
+            <button class="nav-btn" data-target="customs" data-i18n="nav_customs">Coutumes</button>
+            <button class="nav-btn" data-target="history" data-i18n="nav_history">Histoire</button>
+            <button class="nav-btn" data-target="legacy" data-i18n="nav_legacy">Héritage Linguistique</button>
+            <button class="nav-btn" data-target="gallery" data-i18n="nav_gallery">Galerie d'Art</button>
+            
+            <div class="lang-dropdown">
+                <button class="lang-btn" id="lang-btn" aria-haspopup="listbox" aria-expanded="false">
+                    <img src="https://flagcdn.com/w20/fr.png" alt="fr" class="lang-flag"> FR <i class="fas fa-chevron-down"></i>
+                </button>
+                <ul class="lang-menu hidden" id="lang-menu" role="listbox">
+                    <li role="option" data-value="fr"><img src="https://flagcdn.com/w20/fr.png" alt="fr" class="lang-flag"> FR</li>
+                    <li role="option" data-value="en"><img src="https://flagcdn.com/w20/gb.png" alt="en" class="lang-flag"> EN</li>
+                    <li role="option" data-value="is"><img src="https://flagcdn.com/w20/is.png" alt="is" class="lang-flag"> IS</li>
+                    <li role="option" data-value="da"><img src="https://flagcdn.com/w20/dk.png" alt="da" class="lang-flag"> DA</li>
+                    <li role="option" data-value="es"><img src="https://flagcdn.com/w20/es.png" alt="es" class="lang-flag"> ES</li>
+                    <li role="option" data-value="de"><img src="https://flagcdn.com/w20/de.png" alt="de" class="lang-flag"> DE</li>
+                    <li role="option" data-value="uk"><img src="https://flagcdn.com/w20/ua.png" alt="uk" class="lang-flag"> UK</li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container">
+        <!-- Section Accueil -->
+        <section id="home" class="view-section active glass-panel fade-in epic-hero-section">
+            <div class="hero-overlay"></div>
+            <div class="hero-content">
+                <h2 class="epic-title" data-i18n="home_welcome">Bienvenue dans le Midgard</h2>
+                <p class="epic-desc" data-i18n="home_desc">Plongez dans les légendes du Nord. Cet outil interactif est conçu pour vous enseigner la signification cachée des Runes, l'histoire des Dieux d'Asgard, ainsi que les coutumes des fiers guerriers et explorateurs Vikings.</p>
+                
+                <div class="hero-portal-container">
+                    <div class="portal-light-glow"></div>
+                    <div class="rune-ring-outer">ᚠ ᚢ ᚦ ᚨ ᚱ ᚲ ᚷ ᚹ ᚺ ᚾ ᛁ ᛃ ᛇ ᛈ ᛉ ᛊ ᛏ ᛒ ᛖ ᛗ ᛚ ᛜ ᛟ ᛞ</div>
+                    <div class="rune-ring-inner">ᛞ ᛟ ᛜ ᛚ ᛗ ᛖ ᛒ ᛏ ᛊ ᛉ ᛈ ᛇ ᛃ ᛁ ᚾ ᚺ  ᚷ ᚲ ᚱ ᚨ ᚦ ᚢ ᚠ</div>
+                    <div class="portal-crest" role="img" aria-label="Norse Emblem"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section Runes -->
+        <section id="runes" class="view-section hidden">
+            <h2 class="glass-title" data-i18n="sec_runes_title">Le Futhark Ancien</h2>
+            <div id="runes-grid" class="grid-layout">
+                <!-- Généré via JS -->
+            </div>
+        </section>
+
+        <!-- Section Mythologie -->
+        <section id="mythology" class="view-section hidden">
+            <h2 class="glass-title" data-i18n="sec_mythology_title">Mythologie et Dieux</h2>
+            <div id="mythology-list" class="cards-layout">
+                <!-- Généré via JS -->
+            </div>
+        </section>
+
+        <!-- Section Personnages -->
+        <section id="characters" class="view-section hidden">
+            <h2 class="glass-title" data-i18n="sec_characters_title">Grandes Figures</h2>
+            <div id="characters-list" class="cards-layout">
+                <!-- Généré via JS -->
+            </div>
+        </section>
+
+        <!-- Section Coutumes -->
+        <section id="customs" class="view-section hidden">
+            <h2 class="glass-title" data-i18n="sec_customs_title">Us et Coutumes</h2>
+            <div id="customs-list" class="cards-layout">
+                <!-- Généré via JS -->
+            </div>
+        </section>
+
+        <!-- Section Histoire -->
+        <section id="history" class="view-section hidden">
+            <h2 class="glass-title" data-i18n="sec_history_title">Exploration & Conquêtes</h2>
+            <div id="history-list" class="cards-layout">
+                <!-- Généré via JS -->
+            </div>
+        </section>
+
+        <!-- Section Héritage Linguistique -->
+        <section id="legacy" class="view-section hidden">
+            <h2 class="glass-title" data-i18n="sec_legacy_title">L'Héritage des Langues</h2>
+            <div id="legacy-grid" class="cards-layout">
+                <!-- Généré via JS -->
+            </div>
+        </section>
+
+        <!-- Section Galerie -->
+        <section id="gallery" class="view-section hidden">
+            <h2 class="glass-title" data-i18n="sec_gallery_title">Galerie Historique & Archéologique</h2>
+            <div id="gallery-grid" class="cards-layout">
+                <!-- Généré via JS -->
+            </div>
+        </section>
+
+        <!-- Grand Codex Nordique (Modal Unifié) -->
+        <div id="codex-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="codex-title">
+            <div class="modal-content glass-panel codex-layout">
+                <button class="close-btn" aria-label="Fermer le codex">&times;</button>
+                
+                <!-- Partie Gauche : Média & Fiche technique -->
+                <div class="codex-sidebar">
+                    <div id="codex-media-container">
+                        <!-- Rempli dynamiquement (Image ou Rune géante) -->
+                    </div>
+                    <div class="codex-quick-facts">
+                        <h3 id="codex-title" class="gold-accent-title"></h3>
+                        <span id="codex-subtitle" class="muted-subtitle"></span>
+                        <div id="codex-fact-sheet" class="fact-sheet">
+                            <!-- Rempli dynamiquement (Attributs, signification) -->
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Partie Droite : Grand Récit encyclopédique -->
+                <div class="codex-body">
+                    <h4 class="codex-section-title"><i class="fas fa-scroll"></i> <span data-i18n="codex_lore_title">Le Codex Historique & Mythologique</span></h4>
+                    <div id="codex-lore" class="modal-lore-text"></div>
+                    
+                    <!-- Barre de Navigation Intégrée -->
+                    <div class="codex-navigation">
+                        <button id="codex-prev-btn" class="codex-nav-btn" aria-label="Article précédent"><i class="fas fa-chevron-left"></i> <span data-i18n="btn_prev">Précédent</span></button>
+                        <span id="codex-page-indicator" class="codex-page-indicator" aria-live="polite"></span>
+                        <button id="codex-next-btn" class="codex-nav-btn" aria-label="Article suivant"><span data-i18n="btn_next">Suivant</span> <i class="fas fa-chevron-right"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Visionneuse d'Images Pleine Grandeur (Lightbox) -->
+        <div id="image-lightbox" class="lightbox-modal hidden" role="dialog" aria-modal="true" aria-label="Visionneuse d'image">
+            <button class="lightbox-close" aria-label="Fermer la visionneuse">&times;</button>
+            <img id="lightbox-img" class="lightbox-content" src="" alt="Aperçu Pleine Grandeur">
+            <div id="lightbox-caption" class="lightbox-caption" aria-live="polite"></div>
+        </div>
+    </main>
+
+    <footer>
+        <p data-i18n="footer_text">© Outil d'apprentissage Viking. Forgez votre esprit.</p>
+    </footer>
+
+    <script src="scripts/i18n.js"></script>
+    <script src="scripts/viking_data_fr.js"></script>
+    <script src="scripts/viking_data_en.js"></script>
+    <script src="scripts/viking_data_is.js"></script>
+    <script src="scripts/viking_data_da.js"></script>
+    <script src="scripts/viking_data_es.js"></script>
+    <script src="scripts/viking_data_de.js"></script>
+    <script src="scripts/viking_data_uk.js"></script>
+    <script src="scripts/viking_data_master.js"></script>
+    <script src="scripts/app.js"></script>
+</body>
+</html>

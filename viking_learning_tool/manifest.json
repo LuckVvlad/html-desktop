@@ -1,0 +1,21 @@
+{
+  "name": "Sagesse du Nord - Culture Viking",
+  "short_name": "Codex Viking",
+  "description": "Apprenez la mythologie, les runes et l'histoire des Vikings.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#080c15",
+  "theme_color": "#080c15",
+  "icons": [
+    {
+      "src": "assets/yggdrasil.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "assets/yggdrasil.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

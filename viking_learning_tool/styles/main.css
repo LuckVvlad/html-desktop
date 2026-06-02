@@ -1,0 +1,1260 @@
+:root {
+    --bg-dark: #0f172a;
+    --bg-accent: #1e293b;
+    --text-main: #f8fafc;
+    --text-muted: #cbd5e1;
+    --gold-accent: #1b5c99;
+    --glass-bg: rgba(30, 41, 59, 0.7);
+    --glass-border: rgba(104, 182, 247, 0.2);
+
+    --font-heading: 'Cinzel', serif;
+    --font-body: 'Inter', sans-serif;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: var(--bg-dark);
+    color: var(--text-main);
+    font-family: var(--font-body);
+    min-height: 100vh;
+    background-image: radial-gradient(circle at 50% 0%, #1e293b 0%, #0f172a 70%);
+    overflow-x: hidden;
+}
+
+.background-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: url('data:image/svg+xml;utf8,<svg opacity="0.05" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y="50" font-size="40" fill="white">ᚣ</text></svg>') repeat;
+    z-index: -1;
+    pointer-events: none;
+}
+
+.glass-panel {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+header {
+    position: relative;
+    z-index: 50;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    grid-template-rows: auto auto;
+    align-items: center;
+    column-gap: 2rem;
+    row-gap: 0.15rem;
+    padding: 0.75rem 2rem;
+    margin: 1.25rem auto 1rem auto;
+    width: 90%;
+    max-width: 1200px; /* Même largeur que le conteneur principal */
+}
+
+h1 {
+    grid-column: 1;
+    grid-row: 1;
+    font-family: var(--font-heading);
+    color: var(--gold-accent);
+    font-size: 2.3rem; /* Titre agrandi */
+    margin-bottom: 0;
+    text-shadow: 0 0 10px rgba(104, 182, 247, 0.3);
+    text-align: left;
+}
+
+header p {
+    grid-column: 1;
+    grid-row: 2;
+    color: var(--text-muted);
+    margin-bottom: 0;
+    font-size: 0.85rem;
+    text-align: left;
+}
+
+nav {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    display: flex;
+    justify-content: flex-start; /* Alignement à gauche des lignes du menu */
+    align-items: center;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+}
+
+.nav-btn {
+    background: rgba(15, 23, 42, 0.3);
+    color: var(--text-main);
+    border: 1px solid var(--glass-border);
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+}
+
+.nav-btn:hover,
+.nav-btn.active {
+    background: var(--gold-accent);
+    color: var(--text-main);
+    box-shadow: 0 0 15px rgba(104, 182, 247, 0.952);
+}
+
+.container {
+    width: 90%;
+    max-width: 1200px;
+    margin: 0 auto 3rem auto;
+}
+
+.view-section {
+    padding: 2rem;
+    min-height: 50vh;
+    overflow: hidden;
+    position: relative;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.fade-in {
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.glass-title {
+    font-family: var(--font-heading);
+    color: var(--gold-accent);
+    text-align: center;
+    margin-bottom: 2rem;
+    font-size: 2.5rem;
+    border-bottom: 1px solid var(--glass-border);
+    padding-bottom: 1rem;
+}
+
+/* Custom Lang Dropdown */
+.lang-dropdown {
+    position: relative;
+    display: inline-block;
+    margin-left: auto;
+}
+
+.lang-btn {
+    background: rgba(15, 23, 42, 0.3);
+    color: var(--text-main);
+    border: 1px solid var(--glass-border);
+    border-radius: 6px;
+    padding: 0.35rem 0.75rem;
+    font-family: var(--font-body);
+    font-size: 0.8rem;
+    cursor: pointer;
+    outline: none;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: all 0.3s ease;
+}
+
+.lang-btn:hover,
+.lang-btn:focus {
+    background: var(--gold-accent);
+    color: var(--text-main);
+    border-color: var(--glass-border);
+    box-shadow: 0 0 10px rgba(104, 182, 247, 0.8);
+}
+
+.lang-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.5rem;
+    background: var(--bg-dark);
+    border: 1px solid var(--glass-border);
+    border-radius: 4px;
+    list-style: none;
+    z-index: 1000;
+    min-width: 100px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+.lang-menu li {
+    padding: 0.5rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    transition: background 0.2s;
+    color: var(--text-main);
+}
+
+.lang-menu li:hover {
+    background: var(--bg-accent);
+    color: var(--gold-accent);
+}
+
+.lang-flag {
+    width: 20px;
+    height: auto;
+    border-radius: 2px;
+}
+
+.epic-hero-section {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    min-height: 70vh;
+    padding: 3.5rem 2rem;
+    background-image: linear-gradient(180deg, rgba(8, 12, 21, 0.4) 0%, rgba(8, 12, 21, 0.85) 100%), url('../assets/epic_hero_bg.png');
+    background-size: cover;
+    background-position: center;
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+}
+
+.hero-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at center, rgba(104, 182, 247, 0.08) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 1;
+}
+
+.hero-content {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    max-width: 900px;
+    width: 100%;
+}
+
+/* Titre héroïque */
+.epic-title {
+    font-size: 3.8rem;
+    font-family: var(--font-heading);
+    color: #ffffff;
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    background: linear-gradient(135deg, #ffffff 30%, var(--gold-accent) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+    filter: drop-shadow(0 0 20px rgba(197, 160, 89, 0.25));
+}
+
+.epic-desc {
+    font-size: 1.25rem;
+    color: #cbd5e1;
+    max-width: 750px;
+    line-height: 1.8;
+    margin: 0 0 1rem 0;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.7);
+}
+
+/* Portail de runes mystique (Taille XXL) */
+.hero-portal-container {
+    position: relative;
+    width: 420px;
+    height: 420px;
+    margin: 2rem 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.portal-light-glow {
+    position: absolute;
+    width: 320px;
+    height: 320px;
+    background: radial-gradient(circle, rgba(104, 182, 247, 0.25) 0%, rgba(197, 160, 89, 0.1) 50%, transparent 100%);
+    border-radius: 50%;
+    filter: blur(15px);
+    animation: breathing 4s ease-in-out infinite;
+    z-index: 1;
+}
+
+.rune-ring-outer {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: var(--gold-accent);
+    letter-spacing: 1.5rem;
+    opacity: 0.65;
+    animation: rotateClockwise 75s linear infinite;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+    z-index: 2;
+    pointer-events: none;
+    transform-origin: center;
+    font-family: var(--font-body);
+}
+
+.rune-ring-inner {
+    position: absolute;
+    width: 78%;
+    height: 78%;
+    font-size: 1.4rem;
+    font-weight: bold;
+    color: var(--cyan-accent);
+    letter-spacing: 1.1rem;
+    opacity: 0.5;
+    animation: rotateCounterClockwise 55s linear infinite;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+    z-index: 2;
+    pointer-events: none;
+    transform-origin: center;
+    font-family: var(--font-body);
+}
+
+.portal-crest {
+    position: absolute;
+    width: 250px;
+    height: 250px;
+    background-image: url('../assets/epic_emblem.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    mix-blend-mode: screen;
+    z-index: 3;
+    filter: drop-shadow(0 0 25px rgba(104, 182, 247, 0.7));
+    animation: floatingEffect 4s ease-in-out infinite;
+}
+
+/* Animations home */
+@keyframes pulseGlow {
+
+    0%,
+    100% {
+        box-shadow: 0 4px 15px rgba(104, 182, 247, 0.2), inset 0 0 10px rgba(104, 182, 247, 0.1);
+        border-color: rgba(104, 182, 247, 0.3);
+    }
+
+    50% {
+        box-shadow: 0 4px 25px rgba(104, 182, 247, 0.4), inset 0 0 15px rgba(104, 182, 247, 0.25);
+        border-color: rgba(104, 182, 247, 0.6);
+    }
+}
+
+@keyframes breathing {
+
+    0%,
+    100% {
+        transform: scale(0.95);
+        opacity: 0.8;
+    }
+
+    50% {
+        transform: scale(1.15);
+        opacity: 1;
+    }
+}
+
+@keyframes floatingEffect {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-8px);
+    }
+}
+
+@keyframes rotateClockwise {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes rotateCounterClockwise {
+    from {
+        transform: rotate(360deg);
+    }
+
+    to {
+        transform: rotate(0deg);
+    }
+}
+
+/* Grid for Runes */
+.grid-layout {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 1.5rem;
+}
+
+.rune-card {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.rune-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0 20px rgba(104, 182, 247, 0.3);
+    border-color: var(--gold-accent);
+}
+
+.rune-symbol {
+    font-size: 3rem;
+    color: var(--gold-accent);
+    margin-bottom: 0.5rem;
+}
+
+.rune-name {
+    font-family: var(--font-heading);
+    font-size: 1.2rem;
+}
+
+/* Cards for Mythes, Personnages, Coutumes */
+.cards-layout {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+}
+
+.info-card {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.info-card.cliquable {
+    cursor: pointer;
+    position: relative;
+}
+
+.info-card.cliquable:hover {
+    transform: translateY(-5px);
+    border-color: var(--gold-accent);
+    box-shadow: 0 8px 30px rgba(104, 182, 247, 0.2);
+}
+
+.card-image-header {
+    height: 256px;
+    width: 100%;
+    background-size: cover;
+    background-position: center;
+    border-bottom: 1px solid var(--glass-border);
+    transition: transform 0.5s ease;
+}
+
+.info-card:hover .card-image-header {
+    transform: scale(1.05);
+}
+
+.pattern-bg {
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    position: relative;
+}
+
+.pattern-bg::after {
+    content: "ᚦ";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 3rem;
+    color: var(--gold-accent);
+    opacity: 0.15;
+    font-family: var(--font-heading);
+}
+
+.card-info-content {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.info-card h3 {
+    font-family: var(--font-heading);
+    color: var(--gold-accent);
+    font-size: 1.4rem;
+    margin-bottom: 0.4rem;
+}
+
+.info-card h4 {
+    color: var(--text-muted);
+    font-style: italic;
+    margin-bottom: 0.75rem;
+    font-size: 0.9rem;
+}
+
+.info-card p {
+    line-height: 1.6;
+    color: var(--text-muted);
+    margin-bottom: 1.25rem;
+    font-size: 0.9rem;
+}
+
+.read-more {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--gold-accent);
+    font-family: var(--font-heading);
+    font-size: 0.85rem;
+    font-weight: 700;
+    transition: gap 0.2s ease;
+    margin-top: auto;
+}
+
+.info-card.cliquable:hover .read-more {
+    gap: 0.75rem;
+}
+
+/* Modal */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(8, 12, 21, 0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 1.5rem;
+}
+
+.modal-content {
+    padding: 2.5rem;
+    max-width: 650px;
+    width: 100%;
+    max-height: 85vh;
+    overflow-y: auto;
+    text-align: left;
+    position: relative;
+    scrollbar-width: thin;
+    scrollbar-color: var(--gold-accent) var(--bg-accent);
+}
+
+.modal-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.modal-content::-webkit-scrollbar-track {
+    background: var(--bg-accent);
+    border-radius: 4px;
+}
+
+.modal-content::-webkit-scrollbar-thumb {
+    background-color: var(--gold-accent);
+    border-radius: 4px;
+}
+
+.close-btn {
+    position: absolute;
+    top: 1rem;
+    right: 1.5rem;
+    font-size: 2rem;
+    cursor: pointer;
+    color: var(--text-muted);
+    transition: color 0.3s;
+    line-height: 1;
+    background: none;
+    border: none;
+    padding: 0;
+    z-index: 10;
+}
+
+.close-btn:hover {
+    color: var(--gold-accent);
+}
+
+.rune-large {
+    font-size: 6rem;
+    color: var(--gold-accent);
+    margin-bottom: 0.5rem;
+    text-align: center;
+    text-shadow: 0 0 20px rgba(104, 182, 247, 0.4);
+}
+
+#modal-rune-name {
+    font-family: var(--font-heading);
+    font-size: 2.2rem;
+    margin-bottom: 1.5rem;
+    text-align: center;
+    color: var(--text-main);
+    border-bottom: 1px solid var(--glass-border);
+    padding-bottom: 1rem;
+}
+
+.modal-content p {
+    margin-bottom: 1rem;
+    font-size: 1.05rem;
+    line-height: 1.7;
+}
+
+.modal-lore-text {
+    margin-top: 1.5rem;
+    border-top: 1px solid var(--glass-border);
+    padding-top: 1.5rem;
+    color: var(--text-main);
+}
+
+.modal-lore-text p {
+    font-size: 1.05rem;
+    line-height: 1.75;
+    text-align: justify;
+}
+
+.gold-accent-title {
+    font-family: var(--font-heading);
+    color: var(--gold-accent);
+    font-size: 2.2rem;
+    margin-bottom: 0.5rem;
+    text-shadow: 0 0 10px rgba(104, 182, 247, 0.2);
+}
+
+.muted-subtitle {
+    color: var(--text-muted);
+    font-style: italic;
+    font-size: 1.1rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid var(--glass-border);
+    padding-bottom: 1rem;
+}
+
+footer {
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+/* Nouvelles Classes Modales & MÃƒÂ©dias */
+.modal-main-image {
+    width: 100%;
+    max-height: 448px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid var(--glass-border);
+    margin-bottom: 1.5rem;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+.modal-link-container {
+    margin-top: 2rem;
+    text-align: center;
+}
+
+.wikipedia-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    background: rgba(104, 182, 247, 0.1);
+    color: var(--gold-accent);
+    border: 1px solid var(--gold-accent);
+    padding: 0.75rem 1.5rem;
+    border-radius: 6px;
+    text-decoration: none;
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+}
+
+.wikipedia-link:hover {
+    background: var(--gold-accent);
+    color: var(--bg-dark);
+    box-shadow: 0 0 15px rgba(104, 182, 247, 0.4);
+    transform: translateY(-2px);
+}
+
+/* ==========================================
+   CONCEPTION DU GRAND CODEX (DOUBLE PANNEAU)
+   ========================================== */
+.codex-layout {
+    display: flex;
+    flex-direction: row;
+    max-width: 1100px !important;
+    width: 90%;
+    max-height: 85vh;
+    padding: 0 !important;
+    overflow: hidden;
+    background: linear-gradient(135deg, rgba(8, 12, 21, 0.9) 0%, rgba(15, 23, 42, 0.8) 100%) !important;
+}
+
+.codex-sidebar {
+    width: 38%;
+    background: rgba(8, 12, 21, 0.35);
+    border-right: 1px solid var(--glass-border);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+}
+
+#codex-media-container {
+    width: 100%;
+}
+
+.codex-media {
+    width: 100%;
+    height: 416px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-color: rgba(8, 12, 21, 0.4);
+    border-bottom: 1px solid var(--glass-border);
+    transition: filter 0.3s ease;
+}
+
+/* Filtre d'ambiance de feu sombre et sacrificiel (L'Ange de la Mort) */
+.codex-media.dark-fire-filter,
+.card-image-header.dark-fire-filter {
+    filter: sepia(0.6) hue-rotate(330deg) saturate(1.8) brightness(0.65) contrast(1.2);
+    transition: filter 0.3s ease;
+}
+
+.codex-media.dark-fire-filter:hover,
+.card-image-header.dark-fire-filter:hover {
+    filter: sepia(0.4) hue-rotate(330deg) saturate(2) brightness(0.75) contrast(1.15);
+}
+
+.codex-rune-media {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 416px;
+    font-size: 8rem;
+    color: var(--gold-accent);
+    background: radial-gradient(circle, rgba(104, 182, 247, 0.1) 0%, rgba(8, 12, 21, 0.5) 100%);
+    border-bottom: 1px solid var(--glass-border);
+    text-shadow: 0 0 30px rgba(104, 182, 247, 0.4);
+    font-family: var(--font-body);
+}
+
+.codex-quick-facts {
+    padding: 1.5rem;
+}
+
+.codex-quick-facts .gold-accent-title {
+    font-size: 1.8rem;
+    margin-bottom: 0.25rem;
+}
+
+.codex-quick-facts .muted-subtitle {
+    display: block;
+    font-size: 0.95rem;
+    border-bottom: none;
+    padding-bottom: 0;
+    margin-bottom: 1.2rem;
+}
+
+.codex-body {
+    width: 62%;
+    padding: 2.2rem 2.5rem;
+    overflow-y: auto;
+    background: rgba(10, 15, 26, 0.1);
+    display: flex;
+    flex-direction: column;
+}
+
+.codex-section-title {
+    font-family: var(--font-heading);
+    color: var(--gold-accent);
+    font-size: 1.15rem;
+    margin-bottom: 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    padding-bottom: 0.6rem;
+    letter-spacing: 1px;
+}
+
+/* Fiche d'identitÃƒÂ© */
+.fact-sheet {
+    margin-top: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 6px;
+    padding: 0.8rem 1rem;
+}
+
+.fact-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.88rem;
+    border-bottom: 1px dashed rgba(255, 255, 255, 0.05);
+    padding-bottom: 0.4rem;
+}
+
+.fact-row:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.fact-label {
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
+.fact-value {
+    color: var(--text-main);
+    font-weight: 500;
+}
+
+/* Personnalisation de la barre de dÃƒÂ©filement du Codex */
+.codex-sidebar::-webkit-scrollbar,
+.codex-body::-webkit-scrollbar {
+    width: 6px;
+}
+
+.codex-sidebar::-webkit-scrollbar-track,
+.codex-body::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.codex-sidebar::-webkit-scrollbar-thumb,
+.codex-body::-webkit-scrollbar-thumb {
+    background: rgba(104, 182, 247, 0.2);
+    border-radius: 3px;
+}
+
+.codex-sidebar::-webkit-scrollbar-thumb:hover,
+.codex-body::-webkit-scrollbar-thumb:hover {
+    background: rgba(104, 182, 247, 0.5);
+}
+
+/* Version Responsive */
+@media (max-width: 768px) {
+    .codex-layout {
+        flex-direction: column;
+        overflow-y: auto !important;
+        max-height: 90vh;
+    }
+
+    .codex-sidebar {
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid var(--glass-border);
+        overflow-y: visible;
+    }
+
+    .codex-media,
+    .codex-rune-media {
+        height: 320px;
+    }
+
+    .codex-rune-media {
+        font-size: 6rem;
+    }
+
+    .codex-body {
+        width: 100%;
+        padding: 1.5rem;
+        overflow-y: visible;
+    }
+}
+
+/* Barre de Navigation du Codex */
+.codex-navigation {
+    margin-top: auto;
+    /* Pousse la navigation vers le bas */
+    padding-top: 2rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+}
+
+.codex-nav-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(104, 182, 247, 0.05);
+    border: 1px solid rgba(104, 182, 247, 0.2);
+    color: var(--text-main);
+    padding: 0.6rem 1.2rem;
+    border-radius: 6px;
+    font-family: var(--font-heading);
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    user-select: none;
+}
+
+.codex-nav-btn:hover {
+    background: rgba(104, 182, 247, 0.15);
+    border-color: var(--gold-accent);
+    color: var(--gold-accent);
+    box-shadow: 0 0 10px rgba(104, 182, 247, 0.15);
+    transform: translateY(-1px);
+}
+
+.codex-nav-btn:active {
+    transform: translateY(0);
+}
+
+.codex-page-indicator {
+    font-family: var(--font-heading);
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    letter-spacing: 1px;
+}
+
+/* ==========================================
+   TABLES ET TIMELINES HISTORIQUES DU CODEX
+   ========================================== */
+.codex-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1.5rem;
+    margin-bottom: 1.5rem;
+    font-size: 0.9rem;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.codex-table th {
+    background: rgba(104, 182, 247, 0.08);
+    color: var(--gold-accent);
+    font-family: var(--font-heading);
+    text-align: left;
+    padding: 0.8rem;
+    border-bottom: 2px solid rgba(104, 182, 247, 0.2);
+    font-size: 0.85rem;
+    letter-spacing: 1px;
+}
+
+.codex-table td {
+    padding: 0.8rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    color: var(--text-main);
+    line-height: 1.5;
+}
+
+.codex-table tr:hover {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.codex-timeline {
+    position: relative;
+    margin-top: 1.5rem;
+    margin-bottom: 1.5rem;
+    padding-left: 1.5rem;
+    border-left: 2px solid rgba(104, 182, 247, 0.15);
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 2rem;
+}
+
+.timeline-item:last-child {
+    margin-bottom: 0;
+}
+
+.timeline-dot {
+    position: absolute;
+    left: calc(-1.5rem - 6px);
+    top: 4px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--gold-accent);
+    box-shadow: 0 0 10px rgba(104, 182, 247, 0.5);
+}
+
+.timeline-title {
+    font-family: var(--font-heading);
+    color: var(--gold-accent);
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+}
+
+.timeline-era {
+    font-size: 0.75rem;
+    background: rgba(104, 182, 247, 0.1);
+    color: var(--gold-accent);
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    font-family: var(--font-main);
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.timeline-desc {
+    color: var(--text-main);
+    font-size: 0.95rem;
+    line-height: 1.6;
+    text-align: justify;
+}
+
+/* Ãƒâ€°lÃƒÂ©ments typographiques additionnels du Codex */
+.codex-body h4.codex-section-title {
+    font-family: var(--font-heading);
+    color: var(--gold-accent);
+    font-size: 1.1rem;
+    margin-top: 1.8rem;
+    margin-bottom: 0.8rem;
+    border-bottom: 1px solid rgba(104, 182, 247, 0.15);
+    padding-bottom: 0.4rem;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.codex-body blockquote {
+    border-left: 3px solid var(--gold-accent);
+    background: rgba(104, 182, 247, 0.04);
+    padding: 0.8rem 1.2rem;
+    margin: 1.5rem 0;
+    font-style: italic;
+    color: var(--text-main);
+    line-height: 1.6;
+    border-radius: 0 4px 4px 0;
+}
+
+.codex-body ul {
+    margin-top: 0.8rem;
+    margin-bottom: 1.2rem;
+    padding-left: 1.5rem;
+}
+
+.codex-body li {
+    margin-bottom: 0.6rem;
+    line-height: 1.5;
+    color: var(--text-main);
+}
+
+.codex-body li strong {
+    color: var(--gold-accent);
+}
+
+/* ==========================================
+   VISIONNEUSE LIGHTBOX PLEINE GRANDEUR
+   ========================================== */
+.lightbox-modal {
+    position: fixed;
+    z-index: 2000;
+    left: 0;
+    top: 0;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    background-color: rgba(10, 10, 12, 0.95);
+    backdrop-filter: blur(12px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.lightbox-modal:not(.hidden) {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.lightbox-close {
+    position: absolute;
+    top: 2rem;
+    right: 2rem;
+    color: var(--text-muted);
+    font-size: 3rem;
+    font-weight: 300;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    z-index: 2010;
+    line-height: 1;
+    background: none;
+    border: none;
+    padding: 0;
+}
+
+.lightbox-close:hover {
+    color: var(--gold-accent);
+    transform: scale(1.1);
+    text-shadow: 0 0 10px rgba(104, 182, 247, 0.4);
+}
+
+.lightbox-content {
+    max-width: 90vw;
+    max-height: 80vh;
+    object-fit: contain;
+    border-radius: 8px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8),
+        0 0 40px rgba(104, 182, 247, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transform: scale(0.9);
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    cursor: zoom-out;
+}
+
+.lightbox-modal:not(.hidden) .lightbox-content {
+    transform: scale(1);
+}
+
+/* ==========================================
+   RÈGLES RESPONSIVES PREMIUM POUR MOBILE ET TABLETTE
+   ========================================== */
+@media (max-width: 992px) {
+    header {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        padding: 0.75rem 1rem;
+        gap: 0.75rem;
+        margin: 1rem auto 0.5rem auto;
+    }
+    
+    h1 {
+        text-align: center;
+        font-size: 2rem;
+    }
+    
+    header p {
+        text-align: center;
+        font-size: 0.85rem;
+        margin-top: 0.15rem;
+    }
+    
+    /* Menu horizontal défilant par glissement (Swipeable Bar) */
+    nav {
+        display: flex;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        width: 100%;
+        padding: 0.25rem 0.5rem 0.6rem 0.5rem;
+        justify-content: flex-start;
+        gap: 0.5rem;
+        scrollbar-width: none; /* Firefox */
+    }
+    
+    nav::-webkit-scrollbar {
+        display: none; /* Chrome, Safari, Opera */
+    }
+    
+    .nav-btn {
+        flex: 0 0 auto; /* Empêche les boutons de rétrécir */
+        font-size: 0.85rem;
+        padding: 0.4rem 0.8rem;
+    }
+    
+    .lang-dropdown {
+        flex: 0 0 auto;
+        margin-left: 0.25rem;
+    }
+}
+
+@media (max-width: 600px) {
+    /* Ajustement responsive du portail de runes sur petit écran */
+    .hero-portal-container {
+        width: 290px;
+        height: 290px;
+        margin: 1.5rem 0;
+    }
+    
+    .portal-light-glow {
+        width: 220px;
+        height: 220px;
+    }
+    
+    .rune-ring-outer {
+        font-size: 1.25rem;
+        letter-spacing: 0.95rem;
+    }
+    
+    .rune-ring-inner {
+        font-size: 0.95rem;
+        letter-spacing: 0.75rem;
+    }
+    
+    .portal-crest {
+        width: 170px;
+        height: 170px;
+        filter: drop-shadow(0 0 15px rgba(104, 182, 247, 0.6));
+    }
+    
+    .epic-title {
+        font-size: 2.4rem;
+    }
+    
+    .epic-desc {
+        font-size: 1rem;
+        line-height: 1.6;
+    }
+    
+    .epic-hero-section {
+        min-height: auto;
+        padding: 2.5rem 1rem;
+    }
+    
+    .view-section {
+        padding: 1.25rem 1rem;
+    }
+}
